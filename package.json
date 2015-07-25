@@ -1,0 +1,26 @@
+{
+  "name": "webm.js",
+  "version": "0.0.0",
+  "description": "In-browser WebM encoder",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kagami/webm.js.git"
+  },
+  "keywords": [
+    "asm.js",
+    "emscripten",
+    "webm",
+    "ffmpeg",
+    "video"
+  ],
+  "author": "Kagami Hiiragi",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/Kagami/webm.js/issues"
+  },
+  "homepage": "https://github.com/Kagami/webm.js#readme",
+  "dependencies": {
+    "ffmpeg.js": "^2.7.9001"
+  }
+}
