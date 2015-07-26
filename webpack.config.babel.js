@@ -1,6 +1,10 @@
 import path from "path";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 
+function insrc(...parts) {
+  return new RegExp("^" + path.join(__dirname, "src", ...parts) + "$");
+}
+
 export default {
   entry: "./src/index",
   output: {
@@ -9,9 +13,11 @@ export default {
   },
   module: {
     loaders: [
+      {test: insrc(".+\\.js"), loader: "babel"},
       {
-        test: new RegExp("^" + path.join(__dirname, "src", ".+\\.js$")),
-        loader: "babel",
+        test: insrc(".+\\.(png|woff)"),
+        loader: "file",
+        query: {name: "[name].[ext]"},
       },
     ],
   },
