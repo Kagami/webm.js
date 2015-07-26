@@ -26,7 +26,11 @@ const Main = React.createClass({
     return {muiTheme: ThemeManager.getCurrentTheme()};
   },
   render: function() {
-    return <Upload/>;
+    return (
+      <div>
+        <Upload/>
+      </div>
+    );
   },
 });
 
