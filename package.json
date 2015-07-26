@@ -4,9 +4,10 @@
   "description": "In-browser WebM encoder",
   "private": true,
   "scripts": {
-    "build": "rm -rf dist && webpack",
     "start": "webpack-dev-server --inline",
-    "test": "eslint ."
+    "build": "rm -rf dist && webpack",
+    "lint": "eslint .",
+    "test": "npm run build && npm run lint"
   },
   "repository": {
     "type": "git",
