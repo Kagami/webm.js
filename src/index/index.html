@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% var url = o.htmlWebpackPlugin.options.getNameBySuffix.bind(null, o.webpack); %}<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -9,13 +9,13 @@
       font-family: 'Roboto';
       font-style: normal;
       font-weight: 400;
-      src: local('Roboto'), local('Roboto-Regular'), url(roboto-regular.woff) format('woff');
+      src: local('Roboto'), local('Roboto-Regular'), url({%=url('roboto-regular.woff')%}) format('woff');
     }
     @font-face {
       font-family: 'Roboto';
       font-style: normal;
       font-weight: 500;
-      src: local('Roboto Medium'), local('Roboto-Medium'), url(roboto-medium.woff) format('woff');
+      src: local('Roboto Medium'), local('Roboto-Medium'), url({%=url('roboto-medium.woff')%}) format('woff');
     }
     html {
       font-family: 'Roboto', sans-serif;
@@ -23,9 +23,9 @@
   </style>
 </head>
 <body>
-  <a href="https://github.com/Kagami/webm.js"><img style="position:absolute;top:0;right:0;border:0" src="ribbon.png" alt="Fork me on GitHub"></a>
+  <a href="https://github.com/Kagami/webm.js"><img style="position:absolute;top:0;right:0;border:0" src="{%=url('ribbon.png')%}" alt="Fork me on GitHub"></a>
   <h1 style="text-align:center">webm.js</h1>
   <div id="main"></div>
-  <script src="webm.js"></script>
+  <script src="{%=url('webm.js')%}"></script>
 </body>
 </html>

@@ -14,16 +14,18 @@ export default {
   module: {
     loaders: [
       {test: insrc(".+\\.js"), loader: "babel"},
-      {
-        test: insrc(".+\\.(png|woff)"),
-        loader: "file",
-        query: {name: "[name].[ext]"},
-      },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join("src", "index", "index.html"),
+      getNameBySuffix: function(stats, suffix) {
+        return stats.assets.find(
+          asset =>
+            asset.name === suffix ||
+            asset.name.slice(-suffix.length - 1) === "." + suffix
+        ).name;
+      },
     }),
   ],
 };
