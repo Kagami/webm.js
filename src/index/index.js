@@ -40,11 +40,11 @@ const Main = React.createClass({
   childContextTypes: {
     muiTheme: React.PropTypes.object,
   },
-  getChildContext: function() {
-    return {muiTheme: ThemeManager.getCurrentTheme()};
-  },
   getInitialState: function() {
     return {};
+  },
+  getChildContext: function() {
+    return {muiTheme: ThemeManager.getCurrentTheme()};
   },
   componentDidMount: function() {
     Prober.spawn().then(prober => {
