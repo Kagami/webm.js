@@ -1,17 +1,41 @@
 /**
- * FFmpeg manager. Uses worker interface of ffmpeg.js.
+ * FFmpeg wrapper. Manage pool of ffmpeg.js workers and provide
+ * high-level Promise API on top of it.
  * @module webm/ffmpeg
  */
+// TODO(Kagami): Move this helpers to the ffmpeg.js?
+// TODO(Kagami): Use IDBFS for large files.
+// TODO(Kagami): Leverage Transferable Objects.
 
-const workerUrl = require("file!ffmpeg.js/ffmpeg-worker-webm");
+const WORKER_URL = require("file!ffmpeg.js/ffmpeg-worker-webm");
 
-const worker = new Worker(workerUrl);
+export class Prober {
+  static spawn() {
+    const worker = new Worker(WORKER_URL);
+    return new Promise(function(resolve, reject) {
+      worker.onmessage = function(e) {
+        delete worker.onmessage;
+        delete worker.onerror;
+        const msg = e.data || {};
+        if (msg.type === "ready") {
+          resolve(new Prober(worker));
+        } else {
+          reject(new Error("Bad message from worker: " + msg));
+        }
+      };
+      worker.onerror = function(e) {
+        delete worker.onmessage;
+        delete worker.onerror;
+        reject(e);
+      };
+    });
+  }
 
-worker.onerror = function(e) {
-  // TODO(Kagami): process it.
-  console.error(e);
-};
+  constructor(worker) {
+    this.worker = worker;
+  }
 
-worker.onmessage = function() {
-  // const msg = e.data;
-};
+  probe({file}) {
+    return Promise.resolve(file);
+  }
+}

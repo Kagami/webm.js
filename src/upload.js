@@ -1,30 +1,25 @@
 /**
- * Upload & preview input file widget.
+ * Upload file widget.
  * @module webm/upload
  */
 
 import React from "react";
 import {FlatButton} from "material-ui";
-import "./ffmpeg";
 
 const styles = {
-  box: {
+  border: {
     display: "table",
-    width: "960px",
-    height: "540px",
-    marginTop: "50px",
-    marginLeft: "auto",
-    marginRight: "auto",
-    textAlign: "center",
-    border: "2px dashed #ccc",
-    color: "#999",
+    boxSizing: "border-box",
+    width: "100%",
+    height: "100%",
     cursor: "pointer",
+    border: "2px dashed #ccc",
   },
   form: {
     display: "table-cell",
     verticalAlign: "middle",
   },
-  flatButtonFix: {
+  buttonFix: {
     fontSize: "inherit",
     textTransform: "none",
     // Cause wrong aligning in Firefox.
@@ -43,25 +38,19 @@ export default React.createClass({
     e.stopPropagation();
   },
   render: function() {
-    // const Progress = (
-    //   <CircularProgress mode="indeterminate" size={2} />
-    // );
-    const Form = (
-      <div style={styles.form} onClick={this.handleBoxClick}>
-        <input type="file" style={styles.hidden} ref="file" />
-        Click/drag your input video here<br/>
-        or borrow a{' '}
-        <FlatButton
-            primary
-            onClick={this.handleSampleClick}
-            style={styles.flatButtonFix}>
-          sample video
-        </FlatButton>
-      </div>
-    );
     return (
-      <div style={styles.box}>
-        {Form}
+      <div style={styles.border}>
+        <div style={styles.form} onClick={this.handleBoxClick}>
+          <input type="file" style={styles.hidden} ref="file" />
+          Click/drag your input video here<br/>
+          or borrow a{' '}
+          <FlatButton
+              primary
+              onClick={this.handleSampleClick}
+              style={styles.buttonFix}>
+            sample video
+          </FlatButton>
+        </div>
       </div>
     );
   },
