@@ -5,6 +5,8 @@ function insrc(...parts) {
   return new RegExp("^" + path.join(__dirname, "src", ...parts) + "$");
 }
 
+// TODO(Kagami): Minify JS and HTML in production mode, use hashed
+// names.
 export default {
   entry: "./src/index",
   output: {
