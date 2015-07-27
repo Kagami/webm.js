@@ -14,9 +14,9 @@ import Preview from "../preview";
 // Assets.
 // TODO(Kagami): Move `name` setting to the webpack config. See
 // <https://github.com/webpack/file-loader/issues/30> for details.
-import "file?name=[hash:15].[name].[ext]!./roboto-regular.woff";
-import "file?name=[hash:15].[name].[ext]!./roboto-medium.woff";
-import "file?name=[hash:15].[name].[ext]!./ribbon.png";
+import "file?name=[hash:10].[name].[ext]!./roboto-regular.woff";
+import "file?name=[hash:10].[name].[ext]!./roboto-medium.woff";
+import "file?name=[hash:10].[name].[ext]!./ribbon.png";
 
 const styles = {
   box: {

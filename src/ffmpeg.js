@@ -7,7 +7,10 @@
 // TODO(Kagami): Use IDBFS for large files.
 // TODO(Kagami): Leverage Transferable Objects.
 
-const WORKER_URL = require("file!ffmpeg.js/ffmpeg-worker-webm");
+const WORKER_URL = require(
+  "file?name=[hash:10].[name].[ext]!" +
+  "ffmpeg.js/ffmpeg-worker-webm"
+);
 
 export class Prober {
   static spawn() {
