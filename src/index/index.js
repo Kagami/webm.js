@@ -3,9 +3,10 @@
  * @module webm/index
  */
 
-import "babel-core/polyfill";
-// FIXME(Kagami): Make sure that in production builds unneeded
-// code/widgets are eliminated.
+// Polyfills.
+import "core-js/fn/object/assign";
+import "core-js/fn/promise";
+// Modules.
 import React from "react";
 import {Prober} from "../ffmpeg";
 import {ThemeManager, Center, Wait, boxWidth} from "../theme";
