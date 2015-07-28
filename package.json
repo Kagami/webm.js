@@ -1,7 +1,7 @@
 {
   "name": "webm.js",
   "version": "0.0.0",
-  "description": "In-browser WebM encoder",
+  "description": "JavaScript WebM encoder",
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --inline",
