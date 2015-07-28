@@ -4,11 +4,11 @@
  */
 
 import React from "react";
-import {Paper, IconButton} from "material-ui";
-import {Wait, secondaryColor} from "./theme";
+import {Paper, FlatButton} from "material-ui";
+import {Wait} from "./theme";
 
 const styles = {
-  root: {
+  info: {
     position: "relative",
   },
   preload: {
@@ -21,7 +21,7 @@ const styles = {
     fontWeight: 500,
     fontSize: "18px",
   },
-  info: {
+  infoInner: {
     padding: 16,
     lineHeight: "36px",
   },
@@ -30,13 +30,16 @@ const styles = {
     position: "absolute",
     bottom: 0,
     right: 0,
-    color: secondaryColor,
-    fontSize: "24px",
+    borderRadius: 0,
   },
   log: {
-    margin: 0,
     padding: 16,
     backgroundColor: "#f8f8f8",
+  },
+  logInner: {
+    margin: 0,
+    maxHeight: 300,
+    overflowY: "auto",
   },
 };
 
@@ -46,7 +49,7 @@ export default React.createClass({
   },
   componentDidMount: function() {
     setTimeout(() => {
-      this.setState({info: {log: "10000000000000\n234234234234\n2342423"}});
+      this.setState({info: {log: "1000\n0000\n000000\n3423\n4234\n2342423"}});
     }, 1000);
   },
   handleMoreClick: function() {
@@ -57,24 +60,30 @@ export default React.createClass({
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
     );
     // TODO(Kagami): Display command as well?
-    const logText = this.state.info && this.state.info.log;
-    const log = <pre style={styles.log}>{logText}</pre>;
+    const log = (
+      <div style={styles.log}>
+        <pre style={styles.logInner}>
+          {this.state.info && this.state.info.log}
+        </pre>
+      </div>
+    );
     const info = (
       <div>
-        <div style={styles.header}>INFO</div>
         <div style={styles.info}>
-          <div>VIDEO:</div>
-          <div>AUDIO:</div>
-          <div>SUBTITLES:</div>
+          <div style={styles.header}>INFO</div>
+          <div style={styles.infoInner}>
+            <div>VIDEO:</div>
+            <div>AUDIO:</div>
+            <div>SUBTITLES:</div>
+          </div>
+          <FlatButton
+            primary
+            style={styles.more}
+            onClick={this.handleMoreClick}
+            label={this.state.logOpen ? "less" : "more"}
+          />
         </div>
         {this.state.logOpen ? log : ""}
-        <IconButton
-          style={styles.more}
-          tooltip="Show/hide full log"
-          onClick={this.handleMoreClick}
-        >
-          {this.state.logOpen ? "⌃" : "⌄"}
-        </IconButton>
       </div>
     );
     return (
