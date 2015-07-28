@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import {FlatButton, Center} from "./theme";
+import {FlatButton, Center, boxWidth, boxHeight} from "./theme";
 
 const styles = {
   header: {
@@ -12,8 +12,8 @@ const styles = {
   },
   video: {
     display: "block",
-    maxWidth: 960,
-    maxHeight: 540,
+    maxWidth: boxWidth,
+    maxHeight: boxHeight,
     margin: "0 auto",
   },
 };

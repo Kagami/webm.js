@@ -19,6 +19,7 @@
     "comma-dangle": [2, "always-multiline"],
     "no-trailing-spaces": 2,
     "max-len": [2, 80],
+    "curly": [2, "multi-line"],
 
     // React.
     "react/display-name": 0,

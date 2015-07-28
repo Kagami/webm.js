@@ -77,8 +77,8 @@ export default React.createClass({
           onChange={this.handleFile}
           ref="file"
         />
-        Click/drag your input video here<br/>
-        or borrow a{' '}
+        <span>Click/drag your input video here</span><br/>
+        <span>or borrow a </span>
         <FlatButton primary onClick={this.handleSampleClick}>
           sample video
         </FlatButton>

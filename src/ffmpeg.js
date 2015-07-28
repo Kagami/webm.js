@@ -38,7 +38,7 @@ export class Prober {
     this.worker = worker;
   }
 
-  probe({file}) {
-    return Promise.resolve(file);
+  run({name, data}) {
+    return Promise.resolve({name, data});
   }
 }
