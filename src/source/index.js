@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import {FlatButton, Center, Wait} from "../theme";
+import {FlatButton, Center, Wait, secondaryColor} from "../theme";
 
 const SAMPLE_NAME = "ed.webm";
 const SAMPLE_URL = require("file?name=[name].[ext]!./ed.webm");
@@ -14,6 +14,7 @@ const styles = {
     boxSizing: "border-box",
     cursor: "pointer",
     border: "2px dashed #ccc",
+    color: secondaryColor,
   },
   hidden: {
     display: "none",
@@ -42,8 +43,9 @@ export default React.createClass({
       this.props.onLoad({name, url, data: e.target.result});
     };
   },
-  handleSampleClick: function(e) {
-    e.stopPropagation();
+  handleSampleClick: function() {
+    // tmp
+    // e.stopPropagation();
     this.setState({loadingSample: true});
     let req = new XMLHttpRequest();
     req.open("GET", SAMPLE_URL, true);
@@ -65,6 +67,10 @@ export default React.createClass({
       this.setState({loadingSample: false});
     };
     req.send();
+  },
+  componentDidMount: function() {
+    // tmp
+    this.handleSampleClick();
   },
   render: function() {
     return this.state.loadingSample ? (

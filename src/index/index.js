@@ -24,8 +24,6 @@ const styles = {
   container: {
     width: boxWidth,
     margin: "0 auto",
-    textAlign: "center",
-    color: "#999",
   },
 };
 

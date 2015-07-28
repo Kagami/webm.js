@@ -7,6 +7,9 @@ import React from "react";
 import {FlatButton, Center, boxWidth, boxHeight} from "./theme";
 
 const styles = {
+  outer: {
+    marginBottom: 10,
+  },
   header: {
     marginBottom: 10,
   },
@@ -22,7 +25,7 @@ export default React.createClass({
   render: function() {
     // TODO(Kagami): Handle case when we can't preview video/audio.
     return (
-      <Center>
+      <Center style={styles.outer}>
         <div style={styles.header}>
           {this.props.source.name} was selected,{' '}
           <FlatButton primary onClick={this.props.onClear}>
@@ -32,7 +35,6 @@ export default React.createClass({
         <video
           src={this.props.source.url}
           style={styles.video}
-          autoPlay
           controls
         />
       </Center>

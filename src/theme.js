@@ -1,5 +1,5 @@
 /**
- * webm.js own theme-related code.
+ * webm.js own theme-related code and components.
  * @module webm/theme
  */
 
@@ -12,6 +12,7 @@ export const ThemeManager = new mui.Styles.ThemeManager();
 // 16:9, reasonably large and 960px is popular grid width.
 export const boxWidth = 960;
 export const boxHeight = 540;
+export const secondaryColor = "#999";
 
 // Fixed FlatButton since it's not possible to style it via the theme.
 export const FlatButton = React.createClass({
@@ -45,6 +46,7 @@ export const Center = React.createClass({
     inner: {
       display: "table-cell",
       verticalAlign: "middle",
+      textAlign: "center",
     },
   },
   render: function() {
@@ -61,10 +63,15 @@ export const Center = React.createClass({
 
 // Inderterminate waiting of some event.
 export const Wait = React.createClass({
+  styles: {
+    text: {
+      color: secondaryColor,
+    },
+  },
   render: function() {
     return (
       <div>
-        <div>{this.props.children}</div>
+        <div style={this.styles.text}>{this.props.children}</div>
         <mui.CircularProgress mode="indeterminate" size={2} />
       </div>
     );
