@@ -27,7 +27,7 @@ export default React.createClass({
     return (
       <Center style={styles.outer}>
         <div style={styles.header}>
-          {this.props.source.name} was selected,{' '}
+          <span>{this.props.source.name} was selected, </span>
           <FlatButton primary onClick={this.props.onClear}>
             clear choice
           </FlatButton>

@@ -40,6 +40,8 @@ const styles = {
     margin: 0,
     maxHeight: 300,
     overflowY: "auto",
+    whiteSpace: "pre-wrap",
+    wordWrap: "break-word",
   },
 };
 
@@ -48,9 +50,12 @@ export default React.createClass({
     return {};
   },
   componentDidMount: function() {
-    setTimeout(() => {
-      this.setState({info: {log: "1000\n0000\n000000\n3423\n4234\n2342423"}});
-    }, 1000);
+    this.props.prober.run(this.props.source).then(info => {
+      console.log(info);
+      this.setState({info});
+    }, () => {
+      this.setState({gatheringError: true});
+    });
   },
   handleMoreClick: function() {
     this.setState({logOpen: !this.state.logOpen});
@@ -59,7 +64,7 @@ export default React.createClass({
     const preload = (
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
     );
-    // TODO(Kagami): Display command as well?
+    // TODO(Kagami): Display command in log too?
     const log = (
       <div style={styles.log}>
         <pre style={styles.logInner}>
@@ -72,6 +77,7 @@ export default React.createClass({
         <div style={styles.info}>
           <div style={styles.header}>INFO</div>
           <div style={styles.infoInner}>
+            <div>DURATION:</div>
             <div>VIDEO:</div>
             <div>AUDIO:</div>
             <div>SUBTITLES:</div>
@@ -80,7 +86,7 @@ export default React.createClass({
             primary
             style={styles.more}
             onClick={this.handleMoreClick}
-            label={this.state.logOpen ? "less" : "more"}
+            label={this.state.logOpen ? "hide" : "log"}
           />
         </div>
         {this.state.logOpen ? log : ""}
