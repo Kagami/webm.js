@@ -14,8 +14,7 @@ export const boxWidth = 960;
 export const boxHeight = 540;
 export const secondaryColor = "#999";
 
-// Fixed FlatButton since it's not possible to style it via the theme.
-export const FlatButton = React.createClass({
+export const InlineFlatButton = React.createClass({
   styles: {
     fix: {
       minWidth: 0,
@@ -24,18 +23,24 @@ export const FlatButton = React.createClass({
       // Cause wrong aligning in Firefox.
       transform: "none",
     },
+    labelFix: {
+      padding: 0,
+    },
   },
   render: function() {
     let style = Object.assign({}, this.styles.fix, this.props.style);
+    let labelStyle = Object.assign(
+      {}, this.styles.labelFix,
+      this.props.labelStyle);
     return (
-      <mui.FlatButton {...this.props} style={style}>
+      <mui.FlatButton {...this.props} style={style} labelStyle={labelStyle}>
         {this.props.children}
       </mui.FlatButton>
     );
   },
 });
 
-// Simple helper to display the centered box.
+/** Simple helper to display the centered box. */
 export const Center = React.createClass({
   styles: {
     outer: {
@@ -61,7 +66,7 @@ export const Center = React.createClass({
   },
 });
 
-// Inderterminate waiting of some event.
+/** Inderterminate waiting of some event. */
 export const Wait = React.createClass({
   styles: {
     text: {
@@ -75,5 +80,18 @@ export const Wait = React.createClass({
         <mui.CircularProgress mode="indeterminate" size={2} />
       </div>
     );
+  },
+});
+
+export const SmallInput = React.createClass({
+  styles: {
+    smallInput: {
+      width: 110,
+      marginRight: 10,
+    },
+  },
+  render: function() {
+    let style = Object.assign({}, this.styles.smallInput, this.props.style);
+    return <mui.TextField {...this.props} style={style} />;
   },
 });

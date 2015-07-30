@@ -58,7 +58,9 @@ export default React.createClass({
   componentDidMount: function() {
     this.props.prober.run(this.props.source).then(info => {
       this.setState({info});
+      this.props.onLoad(info);
     }, () => {
+      // FIXME(Kagami): Handle error.
       this.setState({gatheringError: true});
     });
   },
@@ -94,7 +96,7 @@ export default React.createClass({
             label={this.state.logOpen ? "hide" : "log"}
           />
         </div>
-        {this.state.logOpen ? log : ""}
+        {this.state.logOpen ? log : null}
       </div>
     );
     return (

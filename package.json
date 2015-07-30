@@ -29,8 +29,9 @@
   "dependencies": {
     "core-js": "^1.0.0",
     "ffmpeg.js": "^2.7.9002",
-    "material-ui": "^0.10.1",
-    "react": "^0.13.3"
+    "material-ui": "^0.10.2",
+    "react": "^0.13.3",
+    "react-tap-event-plugin": "^0.1.7"
   },
   "devDependencies": {
     "babel-core": "^5.8.9",

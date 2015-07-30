@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import {FlatButton, Center, Wait, secondaryColor} from "../theme";
+import {InlineFlatButton, Center, Wait, secondaryColor} from "../theme";
 
 const SAMPLE_NAME = "ed.webm";
 const SAMPLE_URL = require("file?name=[name].[ext]!./ed.webm");
@@ -83,11 +83,13 @@ export default React.createClass({
           onChange={this.handleFile}
           ref="file"
         />
-        <span>Click/drag your input video here</span><br/>
+        <div>Click/drag your input video here</div>
         <span>or borrow a </span>
-        <FlatButton primary onClick={this.handleSampleClick}>
-          sample video
-        </FlatButton>
+        <InlineFlatButton
+          primary
+          onClick={this.handleSampleClick}
+          label="sample video"
+        />
       </Center>
     );
   },

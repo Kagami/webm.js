@@ -8,6 +8,7 @@ import "core-js/fn/object/assign";
 import "core-js/fn/promise";
 // Modules.
 import React from "react";
+import injectTapEventPlugin from "react-tap-event-plugin";
 import {Prober} from "../ffmpeg";
 import {ThemeManager, Center, Wait, boxWidth} from "../theme";
 import Source from "../source";
@@ -86,6 +87,8 @@ const Main = React.createClass({
     const encode = (
       <Encode
         key="encode"
+        source={this.state.source}
+        info={this.state.info}
       />
     );
     const output = (
@@ -98,7 +101,7 @@ const Main = React.createClass({
       if (this.state.source) {
         nodes.push(preview);
         nodes.push(info);
-        nodes.push(encode);
+        if (this.state.info) nodes.push(encode);
         if (this.state.output) nodes.push(output);
       } else {
         nodes.push(source);
@@ -110,4 +113,5 @@ const Main = React.createClass({
   },
 });
 
+injectTapEventPlugin();
 React.render(<Main/>, document.getElementById("main"));

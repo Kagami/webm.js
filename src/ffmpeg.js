@@ -45,7 +45,7 @@ function parseTime(time) {
       duration += Number(minutes) * 60;
       duration += Number(hours) * 3600;
     } else {
-      // 1:2 -> [1, None, 2]
+      // 1:2 -> [1, undefined, 2]
       duration += Number(hours) * 60;
     }
   }
