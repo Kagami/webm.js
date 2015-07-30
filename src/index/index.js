@@ -13,6 +13,7 @@ import {ThemeManager, Center, Wait, boxWidth} from "../theme";
 import Source from "../source";
 import Preview from "../preview";
 import Info from "../info";
+import Encode from "../encode";
 // Assets.
 // TODO(Kagami): Move `name` setting to the webpack config. See
 // <https://github.com/webpack/file-loader/issues/30> for details.
@@ -82,9 +83,9 @@ const Main = React.createClass({
         onLoad={this.handleInfoLoad}
       />
     );
-    const encoder = (
-      <div
-        key="encoder"
+    const encode = (
+      <Encode
+        key="encode"
       />
     );
     const output = (
@@ -97,7 +98,7 @@ const Main = React.createClass({
       if (this.state.source) {
         nodes.push(preview);
         nodes.push(info);
-        if (this.state.info) nodes.push(encoder);
+        nodes.push(encode);
         if (this.state.output) nodes.push(output);
       } else {
         nodes.push(source);

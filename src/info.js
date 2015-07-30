@@ -8,6 +8,9 @@ import {Paper, FlatButton} from "material-ui";
 import {Wait} from "./theme";
 
 const styles = {
+  root: {
+    marginBottom: 10,
+  },
   info: {
     position: "relative",
   },
@@ -16,24 +19,27 @@ const styles = {
     textAlign: "center",
   },
   header: {
-    padding: 8,
+    paddingTop: 8,
+    paddingLeft: 8,
     color: "#e0e0e0",
     fontWeight: 500,
     fontSize: "18px",
+    textTransform: "uppercase",
   },
   infoInner: {
-    padding: 16,
-    lineHeight: "36px",
+    padding: "16px 24px",
+    lineHeight: "24px",
   },
-  // TODO(Kagami): Use material UI icons?
+  // TODO(Kagami): Use material UI/SVG icons?
   more: {
+    width: 110,
     position: "absolute",
     bottom: 0,
     right: 0,
     borderRadius: 0,
   },
   log: {
-    padding: 16,
+    padding: 24,
     backgroundColor: "#f8f8f8",
   },
   logInner: {
@@ -51,7 +57,6 @@ export default React.createClass({
   },
   componentDidMount: function() {
     this.props.prober.run(this.props.source).then(info => {
-      console.log(info);
       this.setState({info});
     }, () => {
       this.setState({gatheringError: true});
@@ -75,12 +80,12 @@ export default React.createClass({
     const info = (
       <div>
         <div style={styles.info}>
-          <div style={styles.header}>INFO</div>
+          <div style={styles.header}>input video info</div>
           <div style={styles.infoInner}>
-            <div>DURATION:</div>
-            <div>VIDEO:</div>
-            <div>AUDIO:</div>
-            <div>SUBTITLES:</div>
+            <div>Duration:</div>
+            <div>Video:</div>
+            <div>Audio:</div>
+            <div>Subtitles:</div>
           </div>
           <FlatButton
             primary
