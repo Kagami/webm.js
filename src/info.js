@@ -39,7 +39,7 @@ const styles = {
     borderRadius: 0,
   },
   log: {
-    padding: 24,
+    padding: "16px 24px",
     backgroundColor: "#f8f8f8",
   },
   logInner: {
