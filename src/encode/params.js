@@ -9,7 +9,7 @@ import {
   FlatButton, SelectField, ClearFix, TextField,
 } from "material-ui";
 import {SmallInput} from "../theme";
-import {ShowHide} from "../util";
+import {ShowHide, has} from "../util";
 
 const styles = {
   root: {
@@ -61,17 +61,26 @@ const Empty = {
 };
 
 export default React.createClass({
+  DEFAULT_LIMIT: "8",
+  DEFAULT_QUALITY: "20",
+  DEFAULT_AUIDIO_BITRATE: "64",
   getInitialState: function() {
     return {};
   },
   componentDidMount: function() {
     this.handleUI();
   },
+  getLimitLabel: function() {
+    return this.state.mode === "limit" ? "limit (MiB)" : "bitrate (kbits)";
+  },
+  getEndRangeLabel: function() {
+    return this.state.useDuration ? "duration (time)" : "end (time)";
+  },
   getItems: function(type) {
     return this.props.info[type].map(track => {
       const text = `#${track.id} - ${track.codec}`;
       return {payload: track.id, text};
-    }).concat({});
+    });
   },
   // NOTE(Kagami): We will always have video tracks because we checked
   // for them in Info component. Audio/subtitles tracks are not required
@@ -82,31 +91,73 @@ export default React.createClass({
   hasSubsTracks: function() {
     return !!this.props.info.subs.length;
   },
+  handleMode: function(e, mode) {
+    // NOTE(Kagami): `radio.getSelectedValue` isn't always up-to-date,
+    // so we need this function to get the actual value. See:
+    // <https://github.com/callemall/material-ui/issues/295>.
+    // Though we also need this function to fix some settings in the
+    // moment of switch.
+    let upd = {mode};
+    if (mode === "limit") {
+      upd.limit = this.DEFAULT_LIMIT;
+    } else if (mode === "bitrate") {
+      upd.limit = "800";
+    } else if (mode === "constq") {
+      upd.limit = "0";
+      if (!this.refs.quality.getValue()) {
+        upd.quality = this.DEFAULT_QUALITY;
+      }
+    }
+    this.handleUI(upd);
+  },
+  handleNoAudio: function(e, noAudio) {
+    let audioBitrate = noAudio ? "0": this.DEFAULT_AUIDIO_BITRATE;
+    this.handleUI({audioBitrate});
+  },
+  // Helper to ignore passed event arguments.
+  handleEvent: function() {
+    this.handleUI();
+  },
   handleSelect: function(name, e, index, payload) {
     let change = {}
-    change[name] = payload;
+    change[name] = payload.payload;
     this.handleUI(change);
   },
   handleUI: function(preState) {
-    // Getting & fixing.
-    const state = Object.assign({}, this.state, preState);
-    const noAudio = this.refs.noAudio.isChecked();
-    let audioTrack = state.audioTrack;
-    let audioBitrate = this.refs.audioBitrate.getValue();
-    if (noAudio) {
-      audioTrack = undefined;
-      audioBitrate = undefined;
+    preState = preState || {};
+    function get(option, def) {
+      return has(preState, option) ? preState[option] : def;
     }
+
+    // Getting.
+    let mode = get("mode", this.refs.mode.getSelectedValue());
+    let videoTrack = get("videoTrack", this.state.videoTrack);
+    let limit = get("limit", this.refs.limit.getValue());
+    let quality = get("quality", this.refs.quality.getValue());
+    let noAudio = this.refs.noAudio.isChecked();
+    let audioTrack = get("audioTrack", this.state.audioTrack);
+    let audioBitrate = get("audioBitrate", this.refs.audioBitrate.getValue());
+    let useDuration = this.refs.useDuration.isChecked();
+    let burnSubs = this.refs.burnSubs.isChecked();
+    let subsTrack = get("subsTrack", this.state.subsTrack);
+
+    // Fixing.
+    if (!limit) limit = Empty;
+    if (!quality) quality = Empty;
     if (!audioBitrate) audioBitrate = Empty;
-    const burnSubs = this.refs.burnSubs.isChecked();
 
     // Validation.
 
     // Setting.
-    this.setState({audioTrack, audioBitrate, noAudio, burnSubs});
-    // We don't use value property of TextField because it's very slow
-    // for now. See:
-    // <https://github.com/callemall/material-ui/issues/1040>.
+    this.setState({
+      mode, videoTrack, limit, quality,
+      noAudio, audioTrack, audioBitrate,
+      useDuration, burnSubs, subsTrack,
+    });
+    // We don't use value property of TextField because it's very slow.
+    // See: <https://github.com/callemall/material-ui/issues/1040>.
+    this.refs.limit.setValue(limit);
+    this.refs.quality.setValue(quality);
     this.refs.audioBitrate.setValue(audioBitrate);
   },
   handleModeClick: function() {
@@ -116,7 +167,12 @@ export default React.createClass({
     const video = (
       <ClearFix style={styles.section}>
         <div style={styles.left}>
-          <RadioButtonGroup name="mode" defaultSelected="limit">
+          <RadioButtonGroup
+            ref="mode"
+            name="mode"
+            defaultSelected="limit"
+            onChange={this.handleMode}
+          >
             <RadioButton
               value="limit"
               label="Fit to limit"
@@ -140,12 +196,17 @@ export default React.createClass({
         <div style={styles.right}>
           <div>
             <SmallInput
-              defaultValue={8}
-              floatingLabelText="limit (MiB)"
+              ref="limit"
+              defaultValue={this.DEFAULT_LIMIT}
+              floatingLabelText={this.getLimitLabel()}
+              disabled={this.state.mode === "constq"}
+              onBlur={this.handleEvent}
             />
             <SmallInput
+              ref="quality"
               defaultValue={Empty}
               floatingLabelText="quality (4÷63)"
+              onBlur={this.handleEvent}
             />
           </div>
           <ShowHide show={this.state.advanced}>
@@ -169,24 +230,27 @@ export default React.createClass({
           <Checkbox
             ref="noAudio"
             label="No audio"
-            onCheck={this.handleUI}
+            onCheck={this.handleNoAudio}
             disabled={!this.hasAudioTracks()}
             defaultChecked={!this.hasAudioTracks()}
           />
           <SelectField
             value={this.state.audioTrack}
             hintText="Select audio track"
-            disabled={this.state.noAudio}
+            // Doesn't work for now, see:
+            // <https://github.com/callemall/material-ui/issues/1294>.
+            // disabled={this.state.noAudio}
             onChange={this.handleSelect.bind(null, "audioTrack")}
             menuItems={this.getItems("audio")}
           />
         </div>
         <div style={styles.right}>
-          <TextField
+          <SmallInput
             ref="audioBitrate"
-            defaultValue={64}
+            defaultValue={this.DEFAULT_AUIDIO_BITRATE}
             floatingLabelText="bitrate (kbits)"
             disabled={this.state.noAudio}
+            onBlur={this.handleEvent}
           />
         </div>
       </ClearFix>
@@ -196,21 +260,21 @@ export default React.createClass({
         <ClearFix>
           <div style={styles.left}>
             <Checkbox
+              ref="useDuration"
               label="Specify duration"
+              onCheck={this.handleEvent}
             />
             <Checkbox
               ref="burnSubs"
               label="Burn subtitles"
-              onCheck={this.handleUI}
+              onCheck={this.handleEvent}
               disabled={!this.hasSubsTracks()}
               defaultChecked={this.hasSubsTracks()}
             />
             <SelectField
               value={this.state.subsTrack}
               hintText="Subtitles track"
-              // Doesn't work for now, see:
-              // <https://github.com/callemall/material-ui/issues/1294>.
-              disabled={!this.state.burnSubs}
+              // disabled={!this.state.burnSubs}
               onChange={this.handleSelect.bind(null, "subsTrack")}
               menuItems={this.getItems("subs")}
             />
@@ -223,7 +287,7 @@ export default React.createClass({
               />
               <SmallInput
                 defaultValue={Empty}
-                floatingLabelText="end (time)"
+                floatingLabelText={this.getEndRangeLabel()}
               />
             </div>
             <ShowHide show={this.state.advanced}>

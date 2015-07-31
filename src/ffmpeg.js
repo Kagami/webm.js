@@ -7,28 +7,12 @@
 // TODO(Kagami): Use IDBFS for large files.
 // TODO(Kagami): Leverage Transferable Objects.
 
+import {MAX_SAFE_INTEGER, assert, has, isNumber} from "./util";
+
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
   "ffmpeg.js/ffmpeg-worker-webm"
 );
-
-// Helpers.
-
-const MAX_SAFE_INTEGER = 9007199254740991;
-
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message || "Assertion failed");
-  }
-}
-
-function has(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-function isNumber(n) {
-  return typeof n === "number" && isFinite(n);
-}
 
 // Taken from webm.py.
 function parseTime(time) {

@@ -90,8 +90,16 @@ export const SmallInput = React.createClass({
       marginRight: 10,
     },
   },
+  // Wrap TextField's methods. Seems like this is the recommended way in
+  // React: <https://stackoverflow.com/a/25723635>.
+  getValue: function() {
+    return this.refs && this.refs.input.getValue();
+  },
+  setValue: function(newValue) {
+    return this.refs && this.refs.input.setValue(newValue);
+  },
   render: function() {
     let style = Object.assign({}, this.styles.smallInput, this.props.style);
-    return <mui.TextField {...this.props} style={style} />;
+    return <mui.TextField {...this.props} style={style} ref="input" />;
   },
 });
