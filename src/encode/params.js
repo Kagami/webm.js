@@ -2,6 +2,8 @@
  * Output video params widget.
  * @module webm/encoder/params
  */
+// FIXME(Kagami): Fix all this mess with number/string variables
+// intermixing.
 
 import React from "react";
 import {
@@ -61,15 +63,15 @@ const Empty = {
 };
 
 export default React.createClass({
-  DEFAULT_LIMIT: "8",
-  DEFAULT_QUALITY: "20",
-  DEFAULT_AUIDIO_BITRATE: "64",
   getInitialState: function() {
     return {};
   },
   componentDidMount: function() {
     this.handleUI();
   },
+  DEFAULT_LIMIT: 8,
+  DEFAULT_QUALITY: 20,
+  DEFAULT_AUIDIO_BITRATE: 64,
   getLimitLabel: function() {
     return this.state.mode === "limit" ? "limit (MiB)" : "bitrate (kbits)";
   },
@@ -91,19 +93,75 @@ export default React.createClass({
   hasSubsTracks: function() {
     return !!this.props.info.subs.length;
   },
+  calcVideoBitrate: function({limit, audioBitrate}) {
+    limit = +limit;
+    audioBitrate = +audioBitrate;
+    // FIXME(Kagami): Take start/end into account and check for zero
+    // length/intersections/etc.
+    const duration = this.props.info.duration;
+    const limitKbits = limit * 8 * 1024;
+    const vb = limitKbits / duration - audioBitrate;
+    return Math.floor(vb);
+  },
+  makeRawOpts: function(state) {
+    // XXX(Kagami): We accept state variables via arguments because
+    // `setState` is asynchronous and values in `this.state` might be
+    // outdated.
+    // TODO(Kagami): Basic: scale, crop, custom filters.
+    // TODO(Kagami): Advanced: quality, speed, set/clear metadata.
+    // TODO(Kagami): We can improve quality a bit with "-speed 0 -g 9999".
+    // Though this will slow down the encoding so we need to find the
+    // best speed/quality compromise for in-browser use.
+    let opts = [];
+    // This might be `Empty`.
+    const limit = state.limit.toString();
+    const quality = state.quality.toString();
+
+    // Input.
+    opts.push("-hide_banner");
+    opts.push("-i", this.props.source.name);
+
+    // Streams.
+
+    // Video.
+    opts.push("-c:v", "libvpx", "-speed", "1");
+    opts.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
+    if (limit !== "") {
+      let vb = state.mode === "limit" ? this.calcVideoBitrate(state) : +limit;
+      if (vb !== 0) vb += "k";
+      opts.push("-b:v", vb);
+    }
+    if (quality !== "") opts.push("-crf", quality);
+
+    // Audio.
+    if (state.noAudio) {
+      opts.push("-an");
+    } else {
+      opts.push("-c:a", "libopus", "-b:a", state.audioBitrate + "k");
+      opts.push("-ac", "2");
+    }
+
+    return opts;
+  },
   handleMode: function(e, mode) {
     // NOTE(Kagami): `radio.getSelectedValue` isn't always up-to-date,
     // so we need this function to get the actual value. See:
     // <https://github.com/callemall/material-ui/issues/295>.
-    // Though we also need this function to fix some settings in the
+    // Though we need this function anyway to fix some settings in the
     // moment of switch.
     let upd = {mode};
+    const prevMode = this.state.mode;
     if (mode === "limit") {
       upd.limit = this.DEFAULT_LIMIT;
     } else if (mode === "bitrate") {
-      upd.limit = "800";
+      if (prevMode === "limit") {
+        const vb = this.calcVideoBitrate(this.state);
+        upd.limit = vb > 0 ? vb : "";
+      } else if (prevMode === "constq") {
+        upd.limit = "";
+      }
     } else if (mode === "constq") {
-      upd.limit = "0";
+      upd.limit = 0;
       if (!this.refs.quality.getValue()) {
         upd.quality = this.DEFAULT_QUALITY;
       }
@@ -111,7 +169,7 @@ export default React.createClass({
     this.handleUI(upd);
   },
   handleNoAudio: function(e, noAudio) {
-    let audioBitrate = noAudio ? "0": this.DEFAULT_AUIDIO_BITRATE;
+    let audioBitrate = noAudio ? "0" : this.DEFAULT_AUIDIO_BITRATE;
     this.handleUI({audioBitrate});
   },
   // Helper to ignore passed event arguments.
@@ -119,7 +177,7 @@ export default React.createClass({
     this.handleUI();
   },
   handleSelect: function(name, e, index, payload) {
-    let change = {}
+    let change = {};
     change[name] = payload.payload;
     this.handleUI(change);
   },
@@ -140,28 +198,40 @@ export default React.createClass({
     let useDuration = this.refs.useDuration.isChecked();
     let burnSubs = this.refs.burnSubs.isChecked();
     let subsTrack = get("subsTrack", this.state.subsTrack);
+    let start = this.refs.start.getValue();
+    let end = this.refs.end.getValue();
+    let rawOpts = "";
 
     // Fixing.
-    if (!limit) limit = Empty;
-    if (!quality) quality = Empty;
-    if (!audioBitrate) audioBitrate = Empty;
+    if (limit === "") limit = Empty;
+    if (quality === "") quality = Empty;
+    if (audioBitrate === "") audioBitrate = Empty;
+    if (start === "") start = Empty;
+    if (end === "") end = Empty;
 
-    // Validation.
-
-    // Setting.
-    this.setState({
+    // FIXME(Kagami): Validation.
+    let newState = {
       mode, videoTrack, limit, quality,
       noAudio, audioTrack, audioBitrate,
-      useDuration, burnSubs, subsTrack,
-    });
+      useDuration, burnSubs, subsTrack, start, end,
+    };
+    rawOpts = this.makeRawOpts(newState).join(" ");
+    newState.rawOpts = rawOpts;
+
+    // Setting.
+    this.setState(newState);
     // We don't use value property of TextField because it's very slow.
     // See: <https://github.com/callemall/material-ui/issues/1040>.
     this.refs.limit.setValue(limit);
     this.refs.quality.setValue(quality);
     this.refs.audioBitrate.setValue(audioBitrate);
+    this.refs.start.setValue(start);
+    this.refs.end.setValue(end);
+    if (this.refs.rawOpts) this.refs.rawOpts.setValue(rawOpts);
   },
   handleModeClick: function() {
     this.setState({advanced: !this.state.advanced});
+    this.handleUI();
   },
   render: function() {
     const video = (
@@ -204,6 +274,9 @@ export default React.createClass({
             />
             <SmallInput
               ref="quality"
+              // NOTE(Kagami): This is not mandatory since we set it
+              // `handleUI` anyway but omitting it here would cause a
+              // noticeable flash.
               defaultValue={Empty}
               floatingLabelText="quality (4÷63)"
               onBlur={this.handleEvent}
@@ -282,27 +355,25 @@ export default React.createClass({
           <div style={styles.right}>
             <div>
               <SmallInput
+                ref="start"
                 defaultValue={Empty}
                 floatingLabelText="start (time)"
+                onBlur={this.handleEvent}
               />
               <SmallInput
+                ref="end"
                 defaultValue={Empty}
                 floatingLabelText={this.getEndRangeLabel()}
+                onBlur={this.handleEvent}
               />
             </div>
-            <ShowHide show={this.state.advanced}>
-              <SelectField
-                style={styles.smallSelect}
-                hintText="Threads"
-                menuItems={["1", "2"]}
-              />
-            </ShowHide>
           </div>
         </ClearFix>
         <ShowHide show={this.state.advanced}>
           <TextField
+            ref="rawOpts"
             floatingLabelText="Raw ffmpeg options"
-            defaultValue="-i in.webm -pix_fmt +yuv420p -c:v libvpx -c:a libopus"
+            defaultValue={this.state.rawOpts}
             multiLine
             fullWidth
           />
