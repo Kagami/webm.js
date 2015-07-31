@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import {InlineFlatButton, Center, boxWidth, boxHeight} from "./theme";
+import {InlineButton, Center, boxWidth, boxHeight} from "./theme";
 
 const styles = {
   outer: {
@@ -28,7 +28,7 @@ export default React.createClass({
       <Center style={styles.outer}>
         <div style={styles.header}>
           <span>{this.props.source.name} was selected, </span>
-          <InlineFlatButton
+          <InlineButton
             primary
             onClick={this.props.onClear}
             label="clear choice"

@@ -1,5 +1,5 @@
 /**
- * webm.js own theme-related code and components.
+ * webm.js theme-related code and components.
  * @module webm/theme
  */
 
@@ -14,7 +14,7 @@ export const boxWidth = 960;
 export const boxHeight = 540;
 export const secondaryColor = "#999";
 
-export const InlineFlatButton = React.createClass({
+export const InlineButton = React.createClass({
   styles: {
     fix: {
       minWidth: 0,
