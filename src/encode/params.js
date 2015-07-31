@@ -75,8 +75,8 @@ export default React.createClass({
   getLimitLabel: function() {
     return this.state.mode === "limit" ? "limit (MiB)" : "bitrate (kbits)";
   },
-  getEndRangeLabel: function() {
-    return this.state.useDuration ? "duration (time)" : "end (time)";
+  getDurationLabel: function() {
+    return this.state.useEndTime ? "end (time)" : "duration (time)";
   },
   getItems: function(type) {
     return this.props.info[type].map(track => {
@@ -118,7 +118,6 @@ export default React.createClass({
     const quality = state.quality.toString();
 
     // Input.
-    opts.push("-hide_banner");
     opts.push("-i", this.props.source.name);
 
     // Streams.
@@ -195,11 +194,11 @@ export default React.createClass({
     let noAudio = this.refs.noAudio.isChecked();
     let audioTrack = get("audioTrack", this.state.audioTrack);
     let audioBitrate = get("audioBitrate", this.refs.audioBitrate.getValue());
-    let useDuration = this.refs.useDuration.isChecked();
+    let useEndTime = this.refs.useEndTime.isChecked();
     let burnSubs = this.refs.burnSubs.isChecked();
     let subsTrack = get("subsTrack", this.state.subsTrack);
     let start = this.refs.start.getValue();
-    let end = this.refs.end.getValue();
+    let duration = this.refs.duration.getValue();
     let rawOpts = "";
 
     // Fixing.
@@ -207,13 +206,13 @@ export default React.createClass({
     if (quality === "") quality = Empty;
     if (audioBitrate === "") audioBitrate = Empty;
     if (start === "") start = Empty;
-    if (end === "") end = Empty;
+    if (duration === "") duration = Empty;
 
     // FIXME(Kagami): Validation.
     let newState = {
       mode, videoTrack, limit, quality,
       noAudio, audioTrack, audioBitrate,
-      useDuration, burnSubs, subsTrack, start, end,
+      useEndTime, burnSubs, subsTrack, start, duration,
     };
     rawOpts = this.makeRawOpts(newState).join(" ");
     newState.rawOpts = rawOpts;
@@ -226,7 +225,7 @@ export default React.createClass({
     this.refs.quality.setValue(quality);
     this.refs.audioBitrate.setValue(audioBitrate);
     this.refs.start.setValue(start);
-    this.refs.end.setValue(end);
+    this.refs.duration.setValue(duration);
     if (this.refs.rawOpts) this.refs.rawOpts.setValue(rawOpts);
   },
   handleModeClick: function() {
@@ -333,8 +332,8 @@ export default React.createClass({
         <ClearFix>
           <div style={styles.left}>
             <Checkbox
-              ref="useDuration"
-              label="Specify duration"
+              ref="useEndTime"
+              label="Specify end time"
               onCheck={this.handleEvent}
             />
             <Checkbox
@@ -361,9 +360,9 @@ export default React.createClass({
                 onBlur={this.handleEvent}
               />
               <SmallInput
-                ref="end"
+                ref="duration"
                 defaultValue={Empty}
-                floatingLabelText={this.getEndRangeLabel()}
+                floatingLabelText={this.getDurationLabel()}
                 onBlur={this.handleEvent}
               />
             </div>
