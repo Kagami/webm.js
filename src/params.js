@@ -89,7 +89,8 @@ export default React.createClass({
   },
   getItems: function(type) {
     return this.props.info[type].map(track => {
-      const text = `#${track.id} - ${track.codec}`;
+      let text = `#${track.id} - ${track.codec}`;
+      if (track.default) text += " (default)";
       return {payload: track.id, text};
     });
   },

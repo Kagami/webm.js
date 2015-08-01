@@ -157,8 +157,8 @@ export class Prober {
       const [id, lang, type, codec, rest] = smatch.slice(1);
       if (!has(tracks, type)) continue;
       let stream = {id, lang, codec};
-      if (rest.match(/\b\(default\)\b/)) stream.default = true;
-      if (rest.match(/\b\(forced\)\b/)) stream.forced = true;
+      if (rest.match(/\(default\)/)) stream.default = true;
+      if (rest.match(/\(forced\)/)) stream.forced = true;
       tracks[type].push(stream);
       scanMetadata(smatch.index);
       lastStream = stream;
