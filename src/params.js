@@ -32,7 +32,7 @@ const styles = {
     borderBottom: "1px solid #e0e0e0",
   },
   lastSection: {
-    padding: "16px 24px",
+    padding: "16px 24px 24px 24px",
   },
   left: {
     float: "left",
@@ -50,7 +50,7 @@ const styles = {
     paddingBottom: 16,
   },
   bigButton: {
-    width: 450,
+    width: 250,
   },
   uiMode: {
     width: 110,
