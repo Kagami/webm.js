@@ -5,7 +5,7 @@
 
 import React from "react";
 import {Paper, FlatButton} from "material-ui";
-import {Wait} from "./theme";
+import {Wait, secondaryColor} from "./theme";
 
 const styles = {
   root: {
@@ -30,7 +30,6 @@ const styles = {
     padding: "16px 24px",
     lineHeight: "24px",
   },
-  // TODO(Kagami): Use material UI/SVG icons?
   more: {
     width: 110,
     position: "absolute",
@@ -59,10 +58,14 @@ export default React.createClass({
     this.props.prober.run(this.props.source).then(info => {
       this.setState({info});
       this.props.onLoad(info);
-    }, () => {
-      // FIXME(Kagami): Handle error.
-      this.setState({gatheringError: true});
+    }, (error) => {
+      this.setState({error});
     });
+  },
+  getLogText: function() {
+    return this.state.info ?
+           this.state.info.log :
+           this.state.error ? this.state.error.log : null;
   },
   handleMoreClick: function() {
     this.setState({logOpen: !this.state.logOpen});
@@ -71,23 +74,39 @@ export default React.createClass({
     const preload = (
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
     );
+    const infoInner = (
+      <div>
+        <div style={styles.header}>input video info</div>
+        <div style={styles.infoInner}>
+          <div>Duration:</div>
+          <div>Video:</div>
+          <div>Audio:</div>
+          <div>Subtitles:</div>
+        </div>
+      </div>
+    );
+    // TODO(Kagami): Process other types of errors (Worker, emscripten,
+    // FFmpeg, etc) as well. Though they should be uncommon.
+    const errorInner = (
+      <div>
+        <div style={styles.header}>unsupported video</div>
+        <div style={styles.infoInner}>
+          <span>Selected video is either corrupted or unsupported.<br/>
+          If you think your video is fine, please open issue with the log
+          attached at </span>
+          <a href="https://github.com/Kagami/webm.js/issues">bugtracker</a>.
+        </div>
+      </div>
+    );
     const log = (
       <div style={styles.log}>
-        <pre style={styles.logInner}>
-          {this.state.info && this.state.info.log}
-        </pre>
+        <pre style={styles.logInner}>{this.getLogText()}</pre>
       </div>
     );
     const info = (
       <div>
         <div style={styles.info}>
-          <div style={styles.header}>input video info</div>
-          <div style={styles.infoInner}>
-            <div>Duration:</div>
-            <div>Video:</div>
-            <div>Audio:</div>
-            <div>Subtitles:</div>
-          </div>
+          {this.state.error ? errorInner : infoInner}
           <FlatButton
             primary
             style={styles.more}
@@ -99,7 +118,9 @@ export default React.createClass({
       </div>
     );
     return (
-      <Paper style={styles.root}>{this.state.info ? info : preload}</Paper>
+      <Paper style={styles.root}>
+        {this.state.info || this.state.error ? info : preload}
+      </Paper>
     );
   },
 });

@@ -43,9 +43,8 @@ export default React.createClass({
       this.props.onLoad({name, url, data: e.target.result});
     };
   },
-  handleSampleClick: function() {
-    // tmp
-    // e.stopPropagation();
+  handleSampleClick: function(e) {
+    e.stopPropagation();
     this.setState({loadingSample: true});
     let req = new XMLHttpRequest();
     req.open("GET", SAMPLE_URL, true);
@@ -65,10 +64,6 @@ export default React.createClass({
       this.setState({loadingSample: false});
     };
     req.send();
-  },
-  componentDidMount: function() {
-    // tmp
-    this.handleSampleClick();
   },
   render: function() {
     return this.state.loadingSample ? (

@@ -4,14 +4,16 @@
  */
 
 import React from "react";
-import {InlineButton, Center, boxWidth, boxHeight} from "./theme";
+import {InlineButton, boxWidth, boxHeight, secondaryColor} from "./theme";
 
 const styles = {
   outer: {
+    textAlign: "center",
     marginBottom: 10,
   },
   header: {
-    marginBottom: 10,
+    color: secondaryColor,
+    marginBottom: 2,
   },
   video: {
     display: "block",
@@ -25,7 +27,7 @@ export default React.createClass({
   render: function() {
     // TODO(Kagami): Handle case when we can't preview video/audio.
     return (
-      <Center style={styles.outer}>
+      <div style={styles.outer}>
         <div style={styles.header}>
           <span>{this.props.source.name} was selected, </span>
           <InlineButton
@@ -39,7 +41,7 @@ export default React.createClass({
           style={styles.video}
           controls
         />
-      </Center>
+      </div>
     );
   },
 });

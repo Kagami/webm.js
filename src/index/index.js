@@ -87,7 +87,7 @@ const Main = React.createClass({
     ) : null;
   },
   getEncodeNode: function() {
-    return this.state.info ? (
+    return this.state.encoding ? (
       <Encode info={this.state.info} />
     ) : null;
   },

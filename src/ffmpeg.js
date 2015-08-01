@@ -3,9 +3,6 @@
  * high-level Promise API on top of it.
  * @module webm/ffmpeg
  */
-// TODO(Kagami): Move this helpers to the ffmpeg.js?
-// TODO(Kagami): Use IDBFS for large files.
-// TODO(Kagami): Leverage Transferable Objects.
 
 import {MAX_SAFE_INTEGER, assert, has, isNumber} from "./util";
 
@@ -70,7 +67,7 @@ export class Prober {
     }
     return new Promise((resolve, reject) => {
       let log = [];
-      let err = [];
+      let stderr = [];
       worker.postMessage({
         type: "run",
         arguments: ["-hide_banner", "-i", source.name],
@@ -91,14 +88,18 @@ export class Prober {
           break;
         case "stderr":
           log.push(msg.data);
-          err.push(msg.data);
+          stderr.push(msg.data);
           break;
         case "done":
           cleanup();
           log = log.join("\n");
-          // This may throw so we need to clenup first.
-          const info = Prober.parse(err);
-          resolve(Object.assign({log}, info));
+          try {
+            const info = Prober.parse(stderr);
+            resolve(Object.assign({log}, info));
+          } catch(err) {
+            err.log = log;
+            reject(err);
+          }
           break;
         }
       };
