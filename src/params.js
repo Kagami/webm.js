@@ -114,7 +114,8 @@ export default React.createClass({
     // This might be `Empty`.
     const limit = state.limit.toString();
     const quality = state.quality.toString();
-    const vb = state.mode === "limit" ? this.calcVideoBitrate(state) : +limit;
+    let vb = state.mode === "limit" ? this.calcVideoBitrate(state) : +limit;
+    if (vb !== 0) vb += "k";
 
     // Input.
     opts.push("-i", this.props.source.name);
@@ -127,7 +128,7 @@ export default React.createClass({
     // best speed/quality compromise for in-browser use.
     opts.push("-c:v", "libvpx", "-speed", "1");
     opts.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
-    opts.push("-b:v", vb + "k");
+    opts.push("-b:v", vb);
     if (quality !== "") opts.push("-crf", quality);
 
     // Audio.
