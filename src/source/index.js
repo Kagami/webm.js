@@ -25,6 +25,11 @@ export default React.createClass({
   getInitialState: function() {
     return {};
   },
+  componentDidMount: function() {
+    if (window.localStorage && localStorage.DEBUG) {
+      this.handleSampleClick();
+    }
+  },
   handleBoxClick: function() {
     React.findDOMNode(this.refs.file).click();
   },
@@ -44,7 +49,7 @@ export default React.createClass({
     };
   },
   handleSampleClick: function(e) {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     this.setState({loadingSample: true});
     let req = new XMLHttpRequest();
     req.open("GET", SAMPLE_URL, true);

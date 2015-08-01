@@ -5,7 +5,7 @@
 
 import React from "react";
 import {Paper, FlatButton} from "material-ui";
-import {Wait, secondaryColor} from "./theme";
+import {Wait} from "./theme";
 
 const styles = {
   root: {
@@ -85,6 +85,7 @@ export default React.createClass({
         </div>
       </div>
     );
+    // TODO(Kagami): Require at least one video track.
     // TODO(Kagami): Process other types of errors (Worker, emscripten,
     // FFmpeg, etc) as well. Though they should be uncommon.
     const errorInner = (

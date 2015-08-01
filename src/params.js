@@ -9,6 +9,7 @@ import React from "react";
 import {
   Paper, RadioButtonGroup, RadioButton, Checkbox,
   FlatButton, SelectField, ClearFix, TextField,
+  RaisedButton,
 } from "material-ui";
 import {SmallInput} from "./theme";
 import {ShowHide, has} from "./util";
@@ -31,7 +32,7 @@ const styles = {
     borderBottom: "1px solid #e0e0e0",
   },
   lastSection: {
-    padding: "16px 24px 36px 24px",
+    padding: "16px 24px",
   },
   left: {
     float: "left",
@@ -44,7 +45,14 @@ const styles = {
   smallSelect: {
     width: 230,
   },
-  more: {
+  encode: {
+    textAlign: "center",
+    paddingBottom: 16,
+  },
+  bigButton: {
+    width: 450,
+  },
+  uiMode: {
     width: 110,
     position: "absolute",
     bottom: 0,
@@ -181,6 +189,9 @@ export default React.createClass({
     change[name] = payload.payload;
     this.handleUI(change);
   },
+  handleRawOpts: function(e) {
+    this.setState({rawOpts: e.target.value});
+  },
   handleUI: function(preState) {
     preState = preState || {};
     function get(option, def) {
@@ -229,9 +240,13 @@ export default React.createClass({
     this.refs.duration.setValue(duration);
     if (this.refs.rawOpts) this.refs.rawOpts.setValue(rawOpts);
   },
-  handleModeClick: function() {
+  handleUIModeClick: function() {
     this.setState({advanced: !this.state.advanced});
     this.handleUI();
+  },
+  handleEncodeClick: function() {
+    const params = this.state.rawOpts.trim().split(/\s+/);
+    this.props.onReady(params);
   },
   render: function() {
     const video = (
@@ -376,6 +391,7 @@ export default React.createClass({
             defaultValue={this.state.rawOpts}
             multiLine
             fullWidth
+            onBlur={this.handleRawOpts}
           />
         </ShowHide>
       </div>
@@ -388,10 +404,18 @@ export default React.createClass({
         {audio}
         <div style={styles.header}>other</div>
         {other}
+        <div style={styles.encode}>
+          <RaisedButton
+            style={styles.bigButton}
+            primary
+            label="start encoding"
+            onClick={this.handleEncodeClick}
+          />
+        </div>
         <FlatButton
           primary
-          style={styles.more}
-          onClick={this.handleModeClick}
+          style={styles.uiMode}
+          onClick={this.handleUIModeClick}
           label={this.state.advanced ? "basic" : "advanced"}
         />
       </Paper>

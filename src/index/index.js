@@ -10,7 +10,7 @@ import "core-js/fn/promise";
 import React from "react";
 import injectTapEventPlugin from "react-tap-event-plugin";
 import {Prober} from "../ffmpeg";
-import {ThemeManager, Center, Wait, boxWidth} from "../theme";
+import {ThemeManager, Container, Center, Wait} from "../theme";
 import Source from "../source";
 import Preview from "../preview";
 import Info from "../info";
@@ -40,23 +40,6 @@ const Main = React.createClass({
       // FIXME(Kagami): Display error in UI.
     });
   },
-  styles: {
-    container: {
-      width: boxWidth,
-      margin: "0 auto",
-    },
-  },
-  handleSourceLoad: function(source) {
-    this.setState({source});
-  },
-  handleSourceClear: function() {
-    // FIXME(Kagami): Make sure to cancel all outgoing operations or
-    // block the clear button while they are in progress.
-    this.setState({source: null, info: null});
-  },
-  handleInfoLoad: function(info) {
-    this.setState({info});
-  },
   getPreloadNode: function() {
     return this.state.prober ? null : (
       <Center><Wait>Please wait while webm.js is loading</Wait></Center>
@@ -73,7 +56,7 @@ const Main = React.createClass({
     ) : null;
   },
   getInfoNode: function() {
-    return this.state.source ? (
+    return this.state.source && !this.state.params ? (
       <Info
         prober={this.state.prober}
         source={this.state.source}
@@ -82,25 +65,43 @@ const Main = React.createClass({
     ) : null;
   },
   getParamsNode: function() {
-    return this.state.info ? (
-      <Params source={this.state.source} info={this.state.info} />
+    return this.state.info && !this.state.params ? (
+      <Params
+        source={this.state.source}
+        info={this.state.info}
+        onReady={this.handleParamsReady}
+      />
     ) : null;
   },
   getEncodeNode: function() {
-    return this.state.encoding ? (
+    return this.state.params ? (
       <Encode info={this.state.info} />
     ) : null;
   },
+  handleSourceLoad: function(source) {
+    this.setState({source});
+  },
+  handleSourceClear: function() {
+    // FIXME(Kagami): Make sure to cancel all outgoing operations or
+    // block the clear button while they are in progress.
+    this.setState({source: null, info: null});
+  },
+  handleInfoLoad: function(info) {
+    this.setState({info});
+  },
+  handleParamsReady: function(params) {
+    this.setState({params});
+  },
   render: function() {
     return (
-      <div style={this.styles.container}>
+      <Container>
         {this.getPreloadNode()}
         {this.getSourceNode()}
         {this.getPreviewNode()}
         {this.getInfoNode()}
         {this.getParamsNode()}
         {this.getEncodeNode()}
-      </div>
+      </Container>
     );
   },
 });

@@ -14,6 +14,19 @@ export const boxWidth = 960;
 export const boxHeight = 540;
 export const secondaryColor = "#999";
 
+/** Common containing element. */
+export const Container = React.createClass({
+  styles: {
+    container: {
+      width: boxWidth,
+      margin: "0 auto",
+    },
+  },
+  render: function() {
+    return <div style={this.styles.container}>{this.props.children}</div>;
+  },
+});
+
 export const InlineButton = React.createClass({
   styles: {
     fix: {
