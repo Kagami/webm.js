@@ -16,6 +16,7 @@ import Preview from "../preview";
 import Info from "../info";
 import Params from "../params";
 import Encode from "../encode";
+import {ShowHide} from "../util";
 // Assets.
 // TODO(Kagami): Move `name` setting to the webpack config. See
 // <https://github.com/webpack/file-loader/issues/30> for details.
@@ -51,26 +52,32 @@ const Main = React.createClass({
     ) : null;
   },
   getPreviewNode: function() {
-    return this.state.source && !this.state.params ? (
-      <Preview source={this.state.source} onClear={this.handleSourceClear} />
+    return this.state.source ? (
+      <ShowHide show={!this.state.params} viaCSS>
+        <Preview source={this.state.source} onClear={this.handleSourceClear} />
+      </ShowHide>
     ) : null;
   },
   getInfoNode: function() {
-    return this.state.source && !this.state.params ? (
-      <Info
-        prober={this.state.prober}
-        source={this.state.source}
-        onLoad={this.handleInfoLoad}
-      />
+    return this.state.source ? (
+      <ShowHide show={!this.state.params} viaCSS>
+        <Info
+          prober={this.state.prober}
+          source={this.state.source}
+          onLoad={this.handleInfoLoad}
+        />
+      </ShowHide>
     ) : null;
   },
   getParamsNode: function() {
-    return this.state.info && !this.state.params ? (
-      <Params
-        source={this.state.source}
-        info={this.state.info}
-        onReady={this.handleParamsReady}
-      />
+    return this.state.info ? (
+      <ShowHide show={!this.state.params} viaCSS>
+        <Params
+          source={this.state.source}
+          info={this.state.info}
+          onReady={this.handleParamsReady}
+        />
+      </ShowHide>
     ) : null;
   },
   getEncodeNode: function() {
@@ -88,7 +95,7 @@ const Main = React.createClass({
   handleSourceClear: function() {
     // FIXME(Kagami): Make sure to cancel all outgoing operations or
     // block the clear button while they are in progress.
-    this.setState({source: null, info: null});
+    this.setState({source: null, info: null, params: null});
   },
   handleInfoLoad: function(info) {
     this.setState({info});

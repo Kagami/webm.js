@@ -39,6 +39,7 @@ export default React.createClass({
         src={this.props.source.url}
         style={styles.video}
         controls
+        autoPlay
       />
     ) : null;
     return (
