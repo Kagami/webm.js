@@ -71,7 +71,6 @@ export default React.createClass({
     const preload = (
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
     );
-    // TODO(Kagami): Display command in log too?
     const log = (
       <div style={styles.log}>
         <pre style={styles.logInner}>

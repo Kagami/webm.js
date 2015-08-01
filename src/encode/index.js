@@ -1,13 +1,12 @@
 /**
  * Encoder main module.
- * @module webm/encoder
+ * @module webm/encode
  */
 
 import React from "react";
 import {
   RaisedButton, Tabs, Tab, LinearProgress, Paper, ClearFix,
 } from "material-ui";
-import Params from "./params";
 
 const styles = {
   tabInner: {
@@ -60,60 +59,55 @@ export default React.createClass({
     let logStyle = this.state.logShown ? {} : {display: "none"};
     let logText = "$ ffmpeg -i ed.webm\n" + this.props.info.log;
     return (
-      <div>
-        <Params source={this.props.source} info={this.props.info} />
-        <br/>
-        <Paper>
-          <div style={styles.header}>encoding: 30%</div>
-          <div style={styles.controls}>
-            <LinearProgress
-              mode="determinate"
-              value={30}
-              style={styles.progress}
-            />
-            <ClearFix>
-              <div style={styles.left}>
-                <RaisedButton
-                  primary
-                  style={styles.bigButton}
-                  label="stop encoding"
-                />
-                <RaisedButton
-                  onClick={this.handleLogClick}
-                  style={styles.bigButton}
-                  label={logLabel}
-                />
-              </div>
-              <div style={styles.right}>
-                <RaisedButton
-                  style={styles.bigButton}
-                  label="download"
-                  primary
-                  disabled
-                />
-                <RaisedButton
-                  style={styles.bigButton}
-                  label="preview"
-                  disabled
-                />
-              </div>
-            </ClearFix>
-            <Paper style={logStyle}>
-              <Tabs>
-                <Tab label="main">
-                  <pre style={styles.tabInner}>{logText}</pre>
-                </Tab>
-                <Tab label="audio" />
-                <Tab label="video 1" />
-                <Tab label="video 2" />
-                <Tab label="video 3" />
-                <Tab label="video 4" />
-              </Tabs>
-            </Paper>
-          </div>
-        </Paper>
-        <br/>
-      </div>
+      <Paper>
+        <div style={styles.header}>encoding: 30%</div>
+        <div style={styles.controls}>
+          <LinearProgress
+            mode="determinate"
+            value={30}
+            style={styles.progress}
+          />
+          <ClearFix>
+            <div style={styles.left}>
+              <RaisedButton
+                primary
+                style={styles.bigButton}
+                label="stop encoding"
+              />
+              <RaisedButton
+                onClick={this.handleLogClick}
+                style={styles.bigButton}
+                label={logLabel}
+              />
+            </div>
+            <div style={styles.right}>
+              <RaisedButton
+                style={styles.bigButton}
+                label="download"
+                primary
+                disabled
+              />
+              <RaisedButton
+                style={styles.bigButton}
+                label="preview"
+                disabled
+              />
+            </div>
+          </ClearFix>
+          <Paper style={logStyle}>
+            <Tabs>
+              <Tab label="main">
+                <pre style={styles.tabInner}>{logText}</pre>
+              </Tab>
+              <Tab label="audio" />
+              <Tab label="video 1" />
+              <Tab label="video 2" />
+              <Tab label="video 3" />
+              <Tab label="video 4" />
+            </Tabs>
+          </Paper>
+        </div>
+      </Paper>
     );
   },
 });

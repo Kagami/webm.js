@@ -1,8 +1,8 @@
 /**
  * Output video params widget.
- * @module webm/encoder/params
+ * @module webm/params
  */
-// FIXME(Kagami): Fix all this mess with number/string variables
+// TODO(Kagami): Fix all this mess with number/string variables
 // intermixing.
 
 import React from "react";
@@ -10,12 +10,13 @@ import {
   Paper, RadioButtonGroup, RadioButton, Checkbox,
   FlatButton, SelectField, ClearFix, TextField,
 } from "material-ui";
-import {SmallInput} from "../theme";
-import {ShowHide, has} from "../util";
+import {SmallInput} from "./theme";
+import {ShowHide, has} from "./util";
 
 const styles = {
   root: {
     position: "relative",
+    marginBottom: 10,
   },
   header: {
     paddingTop: 8,
@@ -139,6 +140,9 @@ export default React.createClass({
       opts.push("-c:a", "libopus", "-b:a", state.audioBitrate + "k");
       opts.push("-ac", "2");
     }
+
+    // Subs.
+    opts.push("-sn");
 
     return opts;
   },
