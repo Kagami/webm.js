@@ -101,22 +101,20 @@ export default React.createClass({
     // length/intersections/etc.
     const duration = this.props.info.duration;
     const limitKbits = limit * 8 * 1024;
-    const vb = limitKbits / duration - audioBitrate;
-    return Math.floor(vb);
+    const vb = Math.floor(limitKbits / duration - audioBitrate);
+    return vb > 0 ? vb : 1;
   },
   makeRawOpts: function(state) {
-    // XXX(Kagami): We accept state variables via arguments because
+    // NOTE(Kagami): We accept state variables via arguments because
     // `setState` is asynchronous and values in `this.state` might be
     // outdated.
     // TODO(Kagami): Basic: scale, crop, custom filters.
     // TODO(Kagami): Advanced: quality, speed, set/clear metadata.
-    // TODO(Kagami): We can improve quality a bit with "-speed 0 -g 9999".
-    // Though this will slow down the encoding so we need to find the
-    // best speed/quality compromise for in-browser use.
     let opts = [];
     // This might be `Empty`.
     const limit = state.limit.toString();
     const quality = state.quality.toString();
+    const vb = state.mode === "limit" ? this.calcVideoBitrate(state) : +limit;
 
     // Input.
     opts.push("-i", this.props.source.name);
@@ -124,21 +122,20 @@ export default React.createClass({
     // Streams.
 
     // Video.
+    // TODO(Kagami): We can improve quality a bit with "-speed 0 -g 9999".
+    // Though this will slow down the encoding so we need to find the
+    // best speed/quality compromise for in-browser use.
     opts.push("-c:v", "libvpx", "-speed", "1");
     opts.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
-    if (limit !== "") {
-      let vb = state.mode === "limit" ? this.calcVideoBitrate(state) : +limit;
-      if (vb !== 0) vb += "k";
-      opts.push("-b:v", vb);
-    }
+    opts.push("-b:v", vb + "k");
     if (quality !== "") opts.push("-crf", quality);
 
     // Audio.
     if (state.noAudio) {
       opts.push("-an");
     } else {
-      opts.push("-c:a", "libopus", "-b:a", state.audioBitrate + "k");
-      opts.push("-ac", "2");
+      opts.push("-c:a", "libopus", "-ac", "2");
+      opts.push("-b:a", state.audioBitrate + "k");
     }
 
     // Subs.
@@ -158,8 +155,7 @@ export default React.createClass({
       upd.limit = this.DEFAULT_LIMIT;
     } else if (mode === "bitrate") {
       if (prevMode === "limit") {
-        const vb = this.calcVideoBitrate(this.state);
-        upd.limit = vb > 0 ? vb : "";
+        upd.limit = this.calcVideoBitrate(this.state);
       } else if (prevMode === "constq") {
         upd.limit = "";
       }
