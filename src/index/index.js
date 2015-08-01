@@ -23,6 +23,7 @@ import {ShowHide} from "../util";
 import "file?name=[hash:10].[name].[ext]!./roboto-regular.woff";
 import "file?name=[hash:10].[name].[ext]!./roboto-medium.woff";
 import "file?name=[hash:10].[name].[ext]!./ribbon.png";
+import "file?name=[hash:10].[name].[ext]!./logo.png";
 
 const Main = React.createClass({
   childContextTypes: {
