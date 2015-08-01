@@ -51,7 +51,7 @@ const Main = React.createClass({
     ) : null;
   },
   getPreviewNode: function() {
-    return this.state.source ? (
+    return this.state.source && !this.state.params ? (
       <Preview source={this.state.source} onClear={this.handleSourceClear} />
     ) : null;
   },
@@ -75,7 +75,11 @@ const Main = React.createClass({
   },
   getEncodeNode: function() {
     return this.state.params ? (
-      <Encode info={this.state.info} />
+      <Encode
+        source={this.state.source}
+        params={this.state.params}
+        onCancel={this.handleEncodeCancel}
+      />
     ) : null;
   },
   handleSourceLoad: function(source) {
@@ -91,6 +95,9 @@ const Main = React.createClass({
   },
   handleParamsReady: function(params) {
     this.setState({params});
+  },
+  handleEncodeCancel: function() {
+    this.setState({params: null});
   },
   render: function() {
     return (

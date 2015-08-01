@@ -51,16 +51,20 @@ export default React.createClass({
   getInitialState: function() {
     return {};
   },
+  handleCancelClick: function() {
+    // FIXME(Kagami): Kill workers, cleanup, etc.
+    this.props.onCancel();
+  },
   handleLogClick: function() {
     this.setState({logShown: !this.state.logShown});
   },
   render: function() {
     let logLabel = this.state.logShown ? "hide log" : "show log";
     let logStyle = this.state.logShown ? {} : {display: "none"};
-    let logText = "$ ffmpeg -i ed.webm\n" + this.props.info.log;
+    let logText = "$ ffmpeg " + this.props.params.join(" ");
     return (
       <Paper>
-        <div style={styles.header}>encoding: 30%</div>
+        <div style={styles.header}>encoding {this.props.source.name}: 30%</div>
         <div style={styles.controls}>
           <LinearProgress
             mode="determinate"
@@ -71,6 +75,7 @@ export default React.createClass({
             <div style={styles.left}>
               <RaisedButton
                 primary
+                onClick={this.handleCancelClick}
                 style={styles.bigButton}
                 label="stop encoding"
               />
