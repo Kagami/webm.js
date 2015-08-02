@@ -182,7 +182,7 @@ export default React.createClass({
     this.handleUI(upd);
   },
   handleNoAudio: function(e, noAudio) {
-    let audioBitrate = noAudio ? "0" : this.DEFAULT_AUIDIO_BITRATE;
+    let audioBitrate = noAudio ? 0 : this.DEFAULT_AUIDIO_BITRATE;
     this.handleUI({audioBitrate});
   },
   // Helper to ignore passed event arguments.
@@ -221,6 +221,7 @@ export default React.createClass({
     // Fixing.
     if (limit === "") limit = Empty;
     if (quality === "") quality = Empty;
+    if (noAudio) audioBitrate = 0;
     if (audioBitrate === "") audioBitrate = Empty;
     if (start === "") start = Empty;
     if (duration === "") duration = Empty;
