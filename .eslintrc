@@ -20,6 +20,8 @@
     "no-trailing-spaces": 2,
     "max-len": [2, 80],
     "curly": [2, "multi-line"],
+    "no-underscore-dangle": 0,
+    "no-loop-func": 0,
 
     // React.
     "react/display-name": 0,

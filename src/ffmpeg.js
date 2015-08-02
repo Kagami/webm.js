@@ -4,7 +4,7 @@
  * @module webm/ffmpeg
  */
 
-import {MAX_SAFE_INTEGER, assert, has, isNumber} from "./util";
+import {assert, has} from "./util";
 
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
@@ -13,8 +13,8 @@ const WORKER_URL = require(
 
 // Taken from webm.py.
 function parseTime(time) {
-  if (isNumber(time)) return time;
-  if (time === "N/A") return MAX_SAFE_INTEGER;
+  if (Number.isFinite(time)) return time;
+  if (time === "N/A") return Number.MAX_SAFE_INTEGER;
   // [hh]:[mm]:[ss[.xxx]]
   const m = time.match(/^(?:(\d+):)?(?:(\d+)+:)?(\d+(?:\.\d+)?)$/);
   assert(m, "Invalid time " + time);
@@ -35,7 +35,7 @@ function parseTime(time) {
 
 export class Prober {
   static spawn() {
-    const worker = new Worker(WORKER_URL);
+    let worker = new Worker(WORKER_URL);
     return new Promise(function(resolve, reject) {
       worker.onmessage = function(e) {
         const msg = e.data || {};
@@ -169,5 +169,23 @@ export class Prober {
     scanMetadata();
 
     return {video, audio, subs, duration};
+  }
+}
+
+/** Manager of FFmpeg jobs. */
+export class Pool {
+  constructor() {
+    this._workers = [];
+  }
+
+  spawnJob() {
+    return Promise.resolve();
+  }
+
+  /** Destroy the pool. Safe to run multiple times. */
+  destroy() {
+    while (this._workers.length) {
+      this._workers.shift().terminate();
+    }
   }
 }
