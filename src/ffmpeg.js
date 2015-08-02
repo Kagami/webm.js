@@ -4,7 +4,7 @@
  * @module webm/ffmpeg
  */
 
-import {assert, has} from "./util";
+import {assert, has, remove} from "./util";
 
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
@@ -178,9 +178,15 @@ export class Pool {
   }
 
   spawnJob({params, files, onLog}) {
+    let workers = this._workers;
+    let worker = new Worker(WORKER_URL);
+    workers.push(worker);
+    function cleanup() {
+      worker.terminate();
+      remove(workers, worker);
+    }
     return new Promise(function(resolve, reject) {
       let ready = false;
-      let worker = new Worker(WORKER_URL);
       worker.onmessage = function(e) {
         const msg = e.data || {};
         if (!ready) {
@@ -192,13 +198,14 @@ export class Pool {
               MEMFS: files,
             });
           } else {
-            worker.terminate();
+            cleanup();
             reject(new Error("Bad message from worker: " + msg));
           }
+          return;
         }
         switch (msg.type) {
         case "error":
-          worker.terminate();
+          cleanup();
           reject(new Error(msg.data));
           break;
         case "stdout":
@@ -209,12 +216,12 @@ export class Pool {
           break;
         case "exit":
           if (msg.data !== 0) {
-            worker.terminate();
+            cleanup();
             reject(new Error("Process exited with " + msg.data));
           }
           break;
         case "done":
-          worker.terminate();
+          cleanup();
           // FIXME(Kagami): Fix this in ffmpeg.js.
           let out = msg.data && msg.data.MEMFS || [];
           out.forEach(f => {
@@ -227,7 +234,7 @@ export class Pool {
         }
       };
       worker.onerror = function(e) {
-        worker.terminate();
+        cleanup();
         reject(e);
       };
     });

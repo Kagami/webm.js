@@ -61,3 +61,11 @@ export function fixopt(arr, key, newval) {
     }
   });
 }
+
+export function remove(arr, value) {
+  const index = arr.indexOf(value);
+  if (index !== -1) {
+    arr.splice(index, value);
+  }
+  return arr;
+}
