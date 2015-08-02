@@ -109,8 +109,7 @@ export class Prober {
         // instance many times to probe files.
         // TODO(Kagami): Though it may be rather cheap and safer to
         // respawn it each time? We need to measure the overhead and
-        // also the memory consumption; beware of emscripten's
-        // TOTAL_MEMORY, is it allocated for each worker?
+        // also the memory consumption.
         cleanup();
         reject(e);
       };
@@ -178,8 +177,60 @@ export class Pool {
     this._workers = [];
   }
 
-  spawnJob() {
-    return Promise.resolve();
+  spawnJob({params, files, onLog}) {
+    return new Promise(function(resolve, reject) {
+      let ready = false;
+      let worker = new Worker(WORKER_URL);
+      worker.onmessage = function(e) {
+        const msg = e.data || {};
+        if (!ready) {
+          if (msg.type === "ready") {
+            ready = true;
+            worker.postMessage({
+              type: "run",
+              arguments: params,
+              MEMFS: files,
+            });
+          } else {
+            worker.terminate();
+            reject(new Error("Bad message from worker: " + msg));
+          }
+        }
+        switch (msg.type) {
+        case "error":
+          worker.terminate();
+          reject(new Error(msg.data));
+          break;
+        case "stdout":
+          onLog(msg.data);
+          break;
+        case "stderr":
+          onLog(msg.data);
+          break;
+        case "exit":
+          if (msg.data !== 0) {
+            worker.terminate();
+            reject(new Error("Process exited with " + msg.data));
+          }
+          break;
+        case "done":
+          worker.terminate();
+          // FIXME(Kagami): Fix this in ffmpeg.js.
+          let out = msg.data && msg.data.MEMFS || [];
+          out.forEach(f => {
+            if (!ArrayBuffer.isView(f.data)) {
+              f.data = new Uint8Array(f.data);
+            }
+          });
+          resolve(out);
+          break;
+        }
+      };
+      worker.onerror = function(e) {
+        worker.terminate();
+        reject(e);
+      };
+    });
   }
 
   /** Destroy the pool. Safe to run multiple times. */

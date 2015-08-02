@@ -7,7 +7,7 @@ import React from "react";
 import {Paper, RaisedButton, LinearProgress, ClearFix} from "material-ui";
 import {Pool} from "../ffmpeg";
 import Logger from "./logger";
-import {ShowHide, ahas, getopt, clearopt, fixopt} from "../util";
+import {ShowHide, clearopt, fixopt} from "../util";
 
 const styles = {
   header: {
@@ -36,6 +36,7 @@ const styles = {
   bigButton: {
     width: 450,
     marginBottom: 10,
+    textAlign: "center",
   },
 };
 
@@ -52,9 +53,10 @@ export default React.createClass({
     // component. This is a bit hackish - better to use values from UI
     // widgets, but since we also support raw FFmpeg options it's the
     // only way to detect features of the new encoding.
-    const params = this.props.params;
-    const audio = !ahas(params, "-an");
-    let vthreads = +getopt(params, "-threads");
+    // const params = this.props.params;
+    const params = this.props.params.concat("-t", "1");  //tmp
+    const audio = false; //!ahas(params, "-an");
+    let vthreads = 1; //+getopt(params, "-threads");
     // FIXME(Kagami): Do not spawn more threads than number of seconds
     // in resulting video.
     if (!Number.isInteger(vthreads) || vthreads < 1 || vthreads > 8) {
@@ -94,42 +96,72 @@ export default React.createClass({
     logMain("  " + vthreads + " video thread(s)");
     for (let i = 0; i < vthreads; ++i) {
       const key = "video " + (i + 1);
+      const logThread = log.bind(null, key);
       addLog(key);
-      log(key, getCmd(videoParams1));
-      jobs.push(pool.spawnJob(videoParams1).then(() => {
+      logMain(key + " started first pass");
+      logThread(getCmd(videoParams1));
+      const job = pool.spawnJob({
+        params: videoParams1,
+        onLog: logThread,
+        // TODO(Kagami): Is it ok to pass Blob/File URL to work? Does it
+        // cause additional memory consumption?
+        files: [this.props.source],
+      }).then(files => {
         logMain(key + " finished first pass");
-        log(key, getCmd(videoParams2));
-        // FIXME(Kagami): Pass logfile from the first pass.
-        return pool.spawnJob(videoParams2);
-      }).then(() => {
+        logMain(key + " started second pass");
+        logThread(getCmd(videoParams2));
+        return pool.spawnJob({
+          params: videoParams2,
+          onLog: logThread,
+          // Log and source for the second pass.
+          files: files.concat(this.props.source),
+        });
+      }).then(files => {
         logMain(key + " finished second pass");
-        // FIXME(Kagami): Pass the output to muxer.
-      }));
+        return files[0];
+      }).catch(e => {
+        e.key = key;
+        throw e;
+      });
+      jobs.push(job);
     }
 
     if (audio) {
-      logMain("  1 audio thread");
-      addLog("audio");
-      log("audio", getCmd(audioParams));
-      jobs.push(pool.spawnJob(audioParams).then(() => {
-        logMain("audio finished");
-        // FIXME(Kagami): Pass the output to muxer.
-      }));
+      const key = "audio";
+      const logThread = log.bind(null, key);
+      logMain("  1 " + key + " thread");
+      addLog(key);
+      logMain(key + " started");
+      logThread(getCmd(audioParams));
+      const job = pool.spawnJob({
+        params: audioParams,
+        onLog: logThread,
+        files: [this.props.source],
+      }).then(files => {
+        logMain(key + " finished");
+        return files[0];
+      }).catch(e => {
+        e.key = key;
+        throw e;
+      });
+      jobs.push(job);
     }
 
-    Promise.all(jobs).then(() => {
+    const cleanup = pool.destroy.bind(pool);
+    Promise.all(jobs).then(parts => {
       logMain("Muxing parts");
-      // FIXME(Kagami): Mux resulting data.
-    }).then(() => {
-      // Success.
+      // FIXME(Kagami): Mux parts.
+      return parts[0];
+    }).then(output => {
       logMain("All is done");
-    }, () => {
-      // FIXME(Kagami): Process error, print detail error in log.
-      this.state.pool.destroy();
-    });
-  },
-  componentWillUnmount: function() {
-    this.state.pool.destroy();
+      this.setState({output});
+    }, e => {
+      let msg = "Fatal error";
+      if (e.key) msg += " at " + e.key;
+      msg += ": " + e.message;
+      logMain(msg);
+      this.setState({error: e});
+    }).then(cleanup, cleanup);
   },
   getDefaultVideoThreads: function() {
     let threadNum = navigator.hardwareConcurrency || 4;
@@ -138,6 +170,21 @@ export default React.createClass({
     // memory consumption, additional audio thread, etc.
     if (threadNum > 4) threadNum = 4;
     return threadNum;
+  },
+  /**
+   * Return pretty filename based on the input video name.
+   * in.mkv -> in.webm
+   * in.webm -> in.webm.webm
+   */
+  getOutputFilename: function() {
+    let basename = this.props.source.name;
+    const dotIndex = name.lastIndexOf(".");
+    if (dotIndex !== -1) {
+      const ext = name.slice(dotIndex + 1);
+      if (ext !== "webm") basename = name.slice(0, dotIndex);
+    }
+    // TODO(Kagami): Use ss/t times in name, see webm.py.
+    return basename + ".webm";
   },
   getCommonParams: function(params) {
     params = clearopt(params, "-threads");
@@ -154,37 +201,54 @@ export default React.createClass({
   },
   getVideoParamsPass2: function(params) {
     params = params.concat("-an");
-    params = params.concat("-pass", "2");
+    params = params.concat("-pass", "2", this.getOutputFilename());
     return params;
   },
   getAudioParams: function(params) {
     params = params.concat("-vn");
     return params;
   },
-  handleCancelClick: function() {
-    this.props.onCancel();
-  },
   handleLogClick: function() {
     this.setState({logShown: !this.state.logShown});
   },
+  handleDownloadClick: function(e) {
+    console.log(e);
+  },
   render: function() {
-    let logLabel = this.state.logShown ? "hide log" : "show log";
+    const error = !!this.state.error;
+    const done = !!this.state.output;
+    const progress = error ? 0 : (done ? 100 : 30); //tmp
+    let blob, url, outname;
+    let header = "encoding " + this.props.source.name + ": ";
+    if (error) {
+      header = "error";
+    } else if (done) {
+      header += "done";
+      blob = new Blob([this.state.output.data]);
+      url = URL.createObjectURL(blob);
+      outname = this.state.output.name;
+    } else {
+      header += progress + "%";
+    }
+    const clearLabel = done ? "encode another" : "stop encoding";
+    const clearHandler = done ? null : this.props.onCancel;
+    const logLabel = this.state.logShown ? "hide log" : "show log";
     return (
       <Paper>
-        <div style={styles.header}>encoding {this.props.source.name}: 30%</div>
+        <div style={styles.header}>{header}</div>
         <div style={styles.controls}>
           <LinearProgress
             mode="determinate"
-            value={30}
+            value={progress}
             style={styles.progress}
           />
           <ClearFix>
             <div style={styles.left}>
               <RaisedButton
-                primary
-                onClick={this.handleCancelClick}
+                primary={!done}
+                label={clearLabel}
+                onClick={clearHandler}
                 style={styles.bigButton}
-                label="stop encoding"
               />
               <RaisedButton
                 onClick={this.handleLogClick}
@@ -197,12 +261,16 @@ export default React.createClass({
                 style={styles.bigButton}
                 label="download"
                 primary
-                disabled
+                disabled={!done}
+                linkButton
+                href={url}
+                download={outname}
+                onClick={this.handleDownloadClick}
               />
               <RaisedButton
                 style={styles.bigButton}
                 label="preview"
-                disabled
+                disabled={!done}
               />
             </div>
           </ClearFix>
