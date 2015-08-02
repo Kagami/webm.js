@@ -4,20 +4,11 @@
  */
 
 import React from "react";
-import {
-  RaisedButton, Tabs, Tab, LinearProgress, Paper, ClearFix,
-} from "material-ui";
+import {Paper, RaisedButton, LinearProgress, ClearFix} from "material-ui";
+import Log from "./log";
+import {ShowHide} from "../util";
 
 const styles = {
-  tabInner: {
-    padding: "8px",
-    backgroundColor: "#f8f8f8",
-    height: 300,
-    margin: 0,
-    overflowY: "scroll",
-    whiteSpace: "pre-wrap",
-    wordWrap: "break-word",
-  },
   header: {
     paddingTop: 8,
     paddingLeft: 8,
@@ -60,8 +51,6 @@ export default React.createClass({
   },
   render: function() {
     let logLabel = this.state.logShown ? "hide log" : "show log";
-    let logStyle = this.state.logShown ? {} : {display: "none"};
-    let logText = "$ ffmpeg " + this.props.params.join(" ");
     return (
       <Paper>
         <div style={styles.header}>encoding {this.props.source.name}: 30%</div>
@@ -99,18 +88,9 @@ export default React.createClass({
               />
             </div>
           </ClearFix>
-          <Paper style={logStyle}>
-            <Tabs>
-              <Tab label="main">
-                <pre style={styles.tabInner}>{logText}</pre>
-              </Tab>
-              <Tab label="audio" />
-              <Tab label="video 1" />
-              <Tab label="video 2" />
-              <Tab label="video 3" />
-              <Tab label="video 4" />
-            </Tabs>
-          </Paper>
+          <ShowHide show={this.state.logShown} viaCSS>
+            <Log/>
+          </ShowHide>
         </div>
       </Paper>
     );

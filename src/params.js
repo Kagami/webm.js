@@ -17,7 +17,6 @@ import {ShowHide, has} from "./util";
 const styles = {
   root: {
     position: "relative",
-    marginBottom: 10,
   },
   header: {
     paddingTop: 8,
