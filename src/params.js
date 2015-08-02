@@ -76,6 +76,11 @@ export default React.createClass({
   },
   componentDidMount: function() {
     this.handleUI();
+    if (window.localStorage && localStorage.SKIP_PARAMS) {
+      // XXX(Kagami): Workaround asynchronous setState. Not sure whether
+      // it will always work, but this is debug-only anyway.
+      setTimeout(this.handleEncodeClick);
+    }
   },
   DEFAULT_LIMIT: 8,
   DEFAULT_QUALITY: 20,

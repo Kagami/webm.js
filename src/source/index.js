@@ -26,7 +26,7 @@ export default React.createClass({
     return {};
   },
   componentDidMount: function() {
-    if (window.localStorage && localStorage.DEBUG) {
+    if (window.localStorage && localStorage.SKIP_SOURCE) {
       this.handleSampleClick();
     }
   },
