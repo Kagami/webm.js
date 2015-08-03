@@ -4,7 +4,7 @@
  * @module webm/ffmpeg
  */
 
-import {assert, has, remove} from "./util";
+import {assert, has, remove, pad2} from "./util";
 
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
@@ -31,11 +31,6 @@ export function parseTime(time) {
     }
   }
   return duration;
-}
-
-function pad2(n) {
-  n |= 0;
-  return n < 10 ? "0" + n : n.toString();
 }
 
 // Taken from webm.py

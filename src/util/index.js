@@ -81,3 +81,16 @@ export function showSize(size) {
   }
   return info;
 }
+
+export function pad2(n) {
+  n |= 0;
+  return n < 10 ? "0" + n : n.toString();
+}
+
+export function showNow() {
+  const now = new Date();
+  let ts = pad2(now.getHours()) + ":";
+  ts += pad2(now.getMinutes()) + ":";
+  ts += pad2(now.getSeconds());
+  return ts;
+}

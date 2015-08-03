@@ -8,7 +8,7 @@ import {Pool, showTime} from "../ffmpeg";
 import {Paper, RaisedButton, LinearProgress} from "../theme";
 import Logger from "./logger";
 import Preview from "./preview";
-import {getopt, clearopt, fixopt, showSize} from "../util";
+import {getopt, clearopt, fixopt, showSize, showNow} from "../util";
 
 const styles = {
   header: {
@@ -79,7 +79,7 @@ export default React.createClass({
     };
     const mainKey = "Main log";
     function logMain(line) {
-      log(mainKey, "# " + line);
+      log(mainKey, "# [" + showNow() + "] " + line);
     }
     function getCmd(opts) {
       return "$ ffmpeg " + opts.join(" ");
@@ -147,18 +147,19 @@ export default React.createClass({
 
     const cleanup = pool.destroy.bind(pool);
     Promise.all(jobs).then(parts => {
-      logMain("Muxing parts");
+      logMain("Muxer started");
       // FIXME(Kagami): Mux parts.
       return parts[0];
     }).then(output => {
+      logMain("Muxer finished");
       // TODO(Kagami): Print output duration.
       const elapsed = (new Date().getTime() - start) / 1000;
       log(mainKey, "##################################################");
-      logMain("All is done in " + showTime(elapsed));
-      logMain("Output file name: " + output.name);
-      logMain("Output file size: " + showSize(output.data.byteLength));
-      logMain("Output video bitrate: " + getopt(params, "-b:v", "0"));
-      logMain("Output audio bitrate: " + getopt(params, "-b:a", "0"));
+      log(mainKey, "# All is done in " + showTime(elapsed));
+      log(mainKey, "# Output file name: " + output.name);
+      log(mainKey, "# Output file size: " + showSize(output.data.byteLength));
+      log(mainKey, "# Output video bitrate: " + getopt(params, "-b:v", "0"));
+      log(mainKey, "# Output audio bitrate: " + getopt(params, "-b:a", "0"));
       this.setState({output});
     }, e => {
       let msg = "Fatal error";
