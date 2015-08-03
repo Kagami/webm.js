@@ -2,8 +2,6 @@
  * Output video params widget.
  * @module webm/params
  */
-// TODO(Kagami): Fix all this mess with number/string variables
-// intermixing.
 
 import React from "react";
 import {
@@ -87,6 +85,9 @@ export default React.createClass({
   getLimitLabel: function() {
     return this.state.mode === "limit" ? "limit (MiB)" : "bitrate (kbits)";
   },
+  getDefaultDuration: function() {
+    return window.localStorage && localStorage.DURATION || Empty;
+  },
   getDurationLabel: function() {
     return this.state.useEndTime ? "end (time)" : "duration (time)";
   },
@@ -128,9 +129,17 @@ export default React.createClass({
     const quality = state.quality.toString();
     let vb = state.mode === "limit" ? this.calcVideoBitrate(state) : +limit;
     if (vb !== 0) vb += "k";
+    const duration = state.duration.toString();
 
     // Input.
     opts.push("-i", this.props.source.name);
+    if (duration !== "") {
+      // FIXME(Kagami): Fix duration in case of `useEndTime`.
+      // NOTE(Kagami): We always use `-t` in resulting command because
+      // `-ss` before `-i` resets the timestamp, see:
+      // <https://trac.ffmpeg.org/wiki/Seeking#Notes>.
+      opts.push("-t", duration);
+    }
 
     // Streams.
 
@@ -231,6 +240,7 @@ export default React.createClass({
       noAudio, audioTrack, audioBitrate,
       useEndTime, burnSubs, subsTrack, start, duration,
     };
+    // FIXME(Kagami): Pass normalized values to makeRawOpts?
     rawOpts = this.makeRawOpts(newState).join(" ");
     newState.rawOpts = rawOpts;
 
@@ -382,7 +392,7 @@ export default React.createClass({
               />
               <SmallInput
                 ref="duration"
-                defaultValue={Empty}
+                defaultValue={this.getDefaultDuration()}
                 floatingLabelText={this.getDurationLabel()}
                 onBlur={this.handleEvent}
               />

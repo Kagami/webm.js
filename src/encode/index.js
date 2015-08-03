@@ -49,8 +49,7 @@ export default React.createClass({
     // component. This is a bit hackish - better to use values from UI
     // widgets, but since we also support raw FFmpeg options it's the
     // only way to detect features of the new encoding.
-    // const params = this.props.params;
-    const params = this.props.params.concat("-t", "0.1");  //tmp
+    const params = this.props.params;
     const audio = false; //!ahas(params, "-an");
     let vthreads = 1; //+getopt(params, "-threads");
     // FIXME(Kagami): Do not spawn more threads than number of seconds
@@ -87,12 +86,13 @@ export default React.createClass({
 
     const start = new Date().getTime();
     addLog("Main log");
+    addLog("Muxer");
     logMain("Spawning jobs:");
     let jobs = [];
 
     logMain("  " + vthreads + " video thread(s)");
-    for (let i = 0; i < vthreads; ++i) {
-      const key = "Video " + (i + 1);
+    for (let i = 1; i <= vthreads; ++i) {
+      const key = "Video " + i;
       const logThread = log.bind(null, key);
       addLog(key);
       logMain(key + " started first pass");
@@ -215,6 +215,8 @@ export default React.createClass({
     this.refs.preview.show();
   },
   render: function() {
+    // FIXME(Kagami): Proper error handling.
+    // FIXME(Kagami): Calculate progress.
     const error = !!this.state.error;
     const done = !!this.state.output;
     const progress = error ? 0 : (done ? 100 : 30); //tmp
