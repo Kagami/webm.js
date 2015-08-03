@@ -54,7 +54,7 @@ export default React.createClass({
     // widgets, but since we also support raw FFmpeg options it's the
     // only way to detect features of the new encoding.
     // const params = this.props.params;
-    const params = this.props.params.concat("-t", "1");  //tmp
+    const params = this.props.params.concat("-t", "0.1");  //tmp
     const audio = false; //!ahas(params, "-an");
     let vthreads = 1; //+getopt(params, "-threads");
     // FIXME(Kagami): Do not spawn more threads than number of seconds
@@ -89,6 +89,7 @@ export default React.createClass({
       return "$ ffmpeg " + opts.join(" ");
     }
 
+    const start = new Date().getTime();
     addLog("main");
     logMain("Spawning jobs:");
     let jobs = [];
@@ -153,7 +154,10 @@ export default React.createClass({
       // FIXME(Kagami): Mux parts.
       return parts[0];
     }).then(output => {
-      logMain("All is done");
+      let elapsed = new Date().getTime() - start;
+      // TODO(Kagami): Print pretty timestamp.
+      elapsed /= 1000;
+      logMain("All is done in " + elapsed + " seconds");
       this.setState({output});
     }, e => {
       let msg = "Fatal error";
@@ -162,6 +166,9 @@ export default React.createClass({
       logMain(msg);
       this.setState({error: e});
     }).then(cleanup, cleanup);
+  },
+  componentWillUnmount: function() {
+    this.state.pool.destroy();
   },
   getDefaultVideoThreads: function() {
     let threadNum = navigator.hardwareConcurrency || 4;
@@ -211,22 +218,19 @@ export default React.createClass({
   handleLogClick: function() {
     this.setState({logShown: !this.state.logShown});
   },
-  handleDownloadClick: function(e) {
-    console.log(e);
-  },
   render: function() {
     const error = !!this.state.error;
     const done = !!this.state.output;
     const progress = error ? 0 : (done ? 100 : 30); //tmp
-    let blob, url, outname;
-    let header = "encoding " + this.props.source.name + ": ";
+    const outname = this.getOutputFilename();
+    let header = "encoding " + outname + ": ";
+    let blob, url;
     if (error) {
       header = "error";
     } else if (done) {
       header += "done";
       blob = new Blob([this.state.output.data]);
       url = URL.createObjectURL(blob);
-      outname = this.state.output.name;
     } else {
       header += progress + "%";
     }
@@ -265,7 +269,6 @@ export default React.createClass({
                 linkButton
                 href={url}
                 download={outname}
-                onClick={this.handleDownloadClick}
               />
               <RaisedButton
                 style={styles.bigButton}
