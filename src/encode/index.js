@@ -7,6 +7,7 @@ import React from "react";
 import {Pool} from "../ffmpeg";
 import {Paper, RaisedButton, LinearProgress} from "../theme";
 import Logger from "./logger";
+import Preview from "./preview";
 import {clearopt, fixopt} from "../util";
 
 const styles = {
@@ -210,6 +211,9 @@ export default React.createClass({
     params = params.concat("-vn");
     return params;
   },
+  handlePreviewClick: function() {
+    this.refs.preview.show();
+  },
   render: function() {
     const error = !!this.state.error;
     const done = !!this.state.output;
@@ -256,7 +260,9 @@ export default React.createClass({
               secondary
               disabled={!done}
               label="preview"
+              onClick={this.handlePreviewClick}
             />
+            <Preview ref="preview" url={url} />
           </div>
           <Logger logs={this.state.logs} />
         </div>
