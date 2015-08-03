@@ -28,12 +28,26 @@ const Output = React.createClass({
 });
 
 export default React.createClass({
+  styles: {
+    tabs: {
+      backgroundColor: "#fff",
+    },
+    tab: {
+      color: "#000",
+      borderRight: "1px solid #e0e0e0",
+      borderBottom: "1px solid #e0e0e0",
+    },
+  },
   render: function() {
     const tabs = (this.props.logs || []).map(log =>
-      <Tab label={log.key} key={log.key}>
+      <Tab style={this.styles.tab} label={log.key} key={log.key}>
         <Output contents={log.contents} />
       </Tab>
     );
-    return <Paper><Tabs>{tabs}</Tabs></Paper>;
+    return (
+      <Paper>
+        <Tabs tabItemContainerStyle={this.styles.tabs}>{tabs}</Tabs>
+      </Paper>
+    );
   },
 });

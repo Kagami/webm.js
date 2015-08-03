@@ -4,10 +4,10 @@
  */
 
 import React from "react";
-import {Paper, RaisedButton, LinearProgress, ClearFix} from "material-ui";
+import {Paper, RaisedButton, LinearProgress} from "material-ui";
 import {Pool} from "../ffmpeg";
 import Logger from "./logger";
-import {ShowHide, clearopt, fixopt} from "../util";
+import {clearopt, fixopt} from "../util";
 
 const styles = {
   header: {
@@ -24,26 +24,21 @@ const styles = {
   controls: {
     padding: "16px 24px",
   },
-  left: {
-    float: "left",
-    width: "50%",
-  },
-  right: {
-    float: "left",
-    width: "50%",
-    textAlign: "right",
+  buttons: {
+    marginBottom: 10,
   },
   bigButton: {
-    width: 450,
-    marginBottom: 10,
-    textAlign: "center",
+    width: 298,
+    marginRight: 9,
+  },
+  lastBigButton: {
+    width: 298,
   },
 };
 
 export default React.createClass({
   getInitialState: function() {
-    const logShown = window.localStorage ? !!localStorage.SHOW_LOG : false;
-    return {logShown};
+    return {};
   },
   componentWillMount: function() {
     let pool = new Pool();
@@ -83,20 +78,20 @@ export default React.createClass({
       this.setState({logs: logsList});
     };
     function logMain(line) {
-      log("main", "# " + line);
+      log("Main log", "# " + line);
     }
     function getCmd(opts) {
       return "$ ffmpeg " + opts.join(" ");
     }
 
     const start = new Date().getTime();
-    addLog("main");
+    addLog("Main log");
     logMain("Spawning jobs:");
     let jobs = [];
 
     logMain("  " + vthreads + " video thread(s)");
     for (let i = 0; i < vthreads; ++i) {
-      const key = "video " + (i + 1);
+      const key = "Video " + (i + 1);
       const logThread = log.bind(null, key);
       addLog(key);
       logMain(key + " started first pass");
@@ -128,9 +123,9 @@ export default React.createClass({
     }
 
     if (audio) {
-      const key = "audio";
+      logMain("  1 audio thread");
+      const key = "Audio";
       const logThread = log.bind(null, key);
-      logMain("  1 " + key + " thread");
       addLog(key);
       logMain(key + " started");
       logThread(getCmd(audioParams));
@@ -215,28 +210,22 @@ export default React.createClass({
     params = params.concat("-vn");
     return params;
   },
-  handleLogClick: function() {
-    this.setState({logShown: !this.state.logShown});
-  },
   render: function() {
     const error = !!this.state.error;
     const done = !!this.state.output;
     const progress = error ? 0 : (done ? 100 : 30); //tmp
     const outname = this.getOutputFilename();
     let header = "encoding " + outname + ": ";
-    let blob, url;
+    let url;
     if (error) {
       header = "error";
     } else if (done) {
       header += "done";
-      blob = new Blob([this.state.output.data]);
+      const blob = new Blob([this.state.output.data]);
       url = URL.createObjectURL(blob);
     } else {
       header += progress + "%";
     }
-    const clearLabel = done ? "encode another" : "stop encoding";
-    const clearHandler = done ? null : this.props.onCancel;
-    const logLabel = this.state.logShown ? "hide log" : "show log";
     return (
       <Paper>
         <div style={styles.header}>{header}</div>
@@ -246,40 +235,30 @@ export default React.createClass({
             value={progress}
             style={styles.progress}
           />
-          <ClearFix>
-            <div style={styles.left}>
-              <RaisedButton
-                primary={!done}
-                label={clearLabel}
-                onClick={clearHandler}
-                style={styles.bigButton}
-              />
-              <RaisedButton
-                onClick={this.handleLogClick}
-                style={styles.bigButton}
-                label={logLabel}
-              />
-            </div>
-            <div style={styles.right}>
+          <div style={styles.buttons}>
+            <RaisedButton
+              style={styles.bigButton}
+              primary={!done}
+              label={done ? "back" : "cancel"}
+              // TODO(Kagami): Confirm action.
+              onClick={this.props.onCancel}
+            />
+            <a href={url} download={outname}>
               <RaisedButton
                 style={styles.bigButton}
-                label="download"
                 primary
                 disabled={!done}
-                linkButton
-                href={url}
-                download={outname}
+                label="download"
               />
-              <RaisedButton
-                style={styles.bigButton}
-                label="preview"
-                disabled={!done}
-              />
-            </div>
-          </ClearFix>
-          <ShowHide show={this.state.logShown} viaCSS>
-            <Logger logs={this.state.logs} />
-          </ShowHide>
+            </a>
+            <RaisedButton
+              style={styles.lastBigButton}
+              secondary
+              disabled={!done}
+              label="preview"
+            />
+          </div>
+          <Logger logs={this.state.logs} />
         </div>
       </Paper>
     );
