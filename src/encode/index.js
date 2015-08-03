@@ -4,11 +4,11 @@
  */
 
 import React from "react";
-import {Pool} from "../ffmpeg";
+import {Pool, showTime} from "../ffmpeg";
 import {Paper, RaisedButton, LinearProgress} from "../theme";
 import Logger from "./logger";
 import Preview from "./preview";
-import {clearopt, fixopt} from "../util";
+import {getopt, clearopt, fixopt, showSize} from "../util";
 
 const styles = {
   header: {
@@ -77,15 +77,16 @@ export default React.createClass({
       logsHash[key].contents += line + "\n";
       this.setState({logs: logsList});
     };
+    const mainKey = "Main log";
     function logMain(line) {
-      log("Main log", "# " + line);
+      log(mainKey, "# " + line);
     }
     function getCmd(opts) {
       return "$ ffmpeg " + opts.join(" ");
     }
 
     const start = new Date().getTime();
-    addLog("Main log");
+    addLog(mainKey);
     addLog("Muxer");
     logMain("Spawning jobs:");
     let jobs = [];
@@ -150,10 +151,14 @@ export default React.createClass({
       // FIXME(Kagami): Mux parts.
       return parts[0];
     }).then(output => {
-      let elapsed = new Date().getTime() - start;
-      // TODO(Kagami): Print pretty timestamp.
-      elapsed /= 1000;
-      logMain("All is done in " + elapsed + " seconds");
+      // TODO(Kagami): Print output duration.
+      const elapsed = (new Date().getTime() - start) / 1000;
+      log(mainKey, "##################################################");
+      logMain("All is done in " + showTime(elapsed));
+      logMain("Output file name: " + output.name);
+      logMain("Output file size: " + showSize(output.data.byteLength));
+      logMain("Output video bitrate: " + getopt(params, "-b:v", "0"));
+      logMain("Output audio bitrate: " + getopt(params, "-b:a", "0"));
       this.setState({output});
     }, e => {
       let msg = "Fatal error";

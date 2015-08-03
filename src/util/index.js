@@ -69,3 +69,15 @@ export function remove(arr, value) {
   }
   return arr;
 }
+
+// Taken from webm.py
+export function showSize(size) {
+  let info = size + " B";
+  if (size >= 1024) {
+    info += ", " + (size / 1024).toFixed(2) + " KiB";
+  }
+  if (size >= 1024 * 1024) {
+    info += ", " + (size / 1024 / 1024).toFixed(2) + " MiB";
+  }
+  return info;
+}

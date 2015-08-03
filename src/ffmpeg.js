@@ -11,8 +11,8 @@ const WORKER_URL = require(
   "ffmpeg.js/ffmpeg-worker-webm"
 );
 
-// Taken from webm.py.
-function parseTime(time) {
+// Taken from webm.py
+export function parseTime(time) {
   if (Number.isFinite(time)) return time;
   if (time === "N/A") return Number.MAX_SAFE_INTEGER;
   // [hh]:[mm]:[ss[.xxx]]
@@ -31,6 +31,23 @@ function parseTime(time) {
     }
   }
   return duration;
+}
+
+function pad2(n) {
+  n |= 0;
+  return n < 10 ? "0" + n : n.toString();
+}
+
+// Taken from webm.py
+export function showTime(duration) {
+  let ts = pad2(duration / 3600) + ":";
+  ts += pad2(duration % 3600 / 60) + ":";
+  ts += pad2(duration % 60);
+  const frac = duration % 1;
+  if (frac >= 0.1) {
+    ts += frac.toString().slice(1, 3);
+  }
+  return ts;
 }
 
 export class Prober {
