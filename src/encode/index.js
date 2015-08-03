@@ -87,7 +87,6 @@ export default React.createClass({
 
     const start = new Date().getTime();
     addLog(mainKey);
-    addLog("Muxer");
     logMain("Spawning jobs:");
     let jobs = [];
 
@@ -123,7 +122,6 @@ export default React.createClass({
       });
       jobs.push(job);
     }
-
     if (audio) {
       logMain("  1 audio thread");
       const key = "Audio";
@@ -144,6 +142,7 @@ export default React.createClass({
       });
       jobs.push(job);
     }
+    addLog("Muxer");
 
     const cleanup = pool.destroy.bind(pool);
     Promise.all(jobs).then(parts => {
