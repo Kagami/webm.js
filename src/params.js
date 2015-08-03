@@ -9,9 +9,8 @@ import React from "react";
 import {
   Paper, RadioButtonGroup, RadioButton, Checkbox,
   FlatButton, SelectField, ClearFix, TextField,
-  RaisedButton,
-} from "material-ui";
-import {SmallInput} from "./theme";
+  RaisedButton, SmallInput,
+} from "./theme";
 import {ShowHide, has} from "./util";
 
 const styles = {

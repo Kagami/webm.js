@@ -4,9 +4,26 @@
  */
 
 import React from "react";
-import mui from "material-ui";
+import ThemeManager from "material-ui/lib/styles/theme-manager";
+import CircularProgress from "material-ui/lib/circular-progress";
+import FlatButton from "material-ui/lib/flat-button";
+import TextField from "material-ui/lib/text-field";
+// Reexport only particular material-ui components to minimize size of
+// the build. See <https://github.com/callemall/material-ui/issues/1317>
+// for details.
+export {CircularProgress, FlatButton, TextField};
+export {default as ClearFix} from "material-ui/lib/clearfix";
+export {default as Paper} from "material-ui/lib/paper";
+export {default as RaisedButton} from "material-ui/lib/raised-button";
+export {default as LinearProgress} from "material-ui/lib/linear-progress";
+export {default as Tabs} from "material-ui/lib/tabs/tabs";
+export {default as Tab} from "material-ui/lib/tabs/tab";
+export {default as RadioButtonGroup} from "material-ui/lib/radio-button-group";
+export {default as RadioButton} from "material-ui/lib/radio-button";
+export {default as Checkbox} from "material-ui/lib/checkbox";
+export {default as SelectField} from "material-ui/lib/select-field";
 
-export const ThemeManager = new mui.Styles.ThemeManager();
+export const themeManager = new ThemeManager();
 
 // Some theme constants.
 // 16:9, reasonably large and 960px is popular grid width.
@@ -46,9 +63,9 @@ export const InlineButton = React.createClass({
       {}, this.styles.labelFix,
       this.props.labelStyle);
     return (
-      <mui.FlatButton {...this.props} style={style} labelStyle={labelStyle}>
+      <FlatButton {...this.props} style={style} labelStyle={labelStyle}>
         {this.props.children}
-      </mui.FlatButton>
+      </FlatButton>
     );
   },
 });
@@ -90,7 +107,7 @@ export const Wait = React.createClass({
     return (
       <div>
         <div style={this.styles.text}>{this.props.children}</div>
-        <mui.CircularProgress mode="indeterminate" size={2} />
+        <CircularProgress mode="indeterminate" size={2} />
       </div>
     );
   },
@@ -113,6 +130,6 @@ export const SmallInput = React.createClass({
   },
   render: function() {
     let style = Object.assign({}, this.styles.smallInput, this.props.style);
-    return <mui.TextField {...this.props} style={style} ref="input" />;
+    return <TextField {...this.props} style={style} ref="input" />;
   },
 });

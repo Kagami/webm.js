@@ -4,8 +4,8 @@
  */
 
 import React from "react";
-import {Paper, RaisedButton, LinearProgress} from "material-ui";
 import {Pool} from "../ffmpeg";
+import {Paper, RaisedButton, LinearProgress} from "../theme";
 import Logger from "./logger";
 import {clearopt, fixopt} from "../util";
 

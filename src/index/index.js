@@ -13,7 +13,7 @@ import "core-js/fn/promise";
 import React from "react";
 import injectTapEventPlugin from "react-tap-event-plugin";
 import {Prober} from "../ffmpeg";
-import {ThemeManager, Container, Center, Wait} from "../theme";
+import {themeManager, Container, Center, Wait} from "../theme";
 import Source from "../source";
 import Preview from "../preview";
 import Info from "../info";
@@ -36,13 +36,14 @@ const Main = React.createClass({
     return {};
   },
   getChildContext: function() {
-    return {muiTheme: ThemeManager.getCurrentTheme()};
+    return {muiTheme: themeManager.getCurrentTheme()};
   },
   componentDidMount: function() {
     Prober.spawn().then(prober => {
       this.setState({prober});
-    }).catch(() => {
+    }).catch(e => {
       // FIXME(Kagami): Display error in UI.
+      console.error(e);
     });
   },
   getPreloadNode: function() {

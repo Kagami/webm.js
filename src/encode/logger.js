@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import {Paper, Tabs, Tab} from "material-ui";
+import {Paper, Tabs, Tab} from "../theme";
 
 const Output = React.createClass({
   componentDidUpdate: function() {

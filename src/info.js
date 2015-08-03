@@ -4,8 +4,7 @@
  */
 
 import React from "react";
-import {Paper, FlatButton} from "material-ui";
-import {Wait} from "./theme";
+import {Paper, FlatButton, Wait} from "./theme";
 
 const styles = {
   root: {
