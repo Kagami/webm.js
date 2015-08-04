@@ -26,7 +26,7 @@ Well, partly. With the help of asm.js, Emscripten produces code almost as fast a
 
 ### What about quality?
 
-Currently only VP8+Opus combination is supported. Opus is better than Vorbis ([and almost any other lossy codec](http://opus-codec.org/comparison/quality.png)) for the full range of bitrates and blazingly fast. Unfortunately, due to lack of SIMD, libvpx-vp9 encoder is rather impractical in browser and VP8 is significantly worse than VP9. Though [JavaScript SIMD API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SIMDA) is part of ES7 proposal and already supported by Firefox Nightly so I'm actively looking into this.
+Currently only VP8+Opus combination is supported. Opus is better than Vorbis ([and almost any other lossy codec](http://opus-codec.org/comparison/quality.png)) for the full range of bitrates and blazingly fast. Unfortunately, due to lack of SIMD, libvpx-vp9 encoder is rather impractical in browser and VP8 is significantly worse than VP9. Though [JavaScript SIMD API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SIMD) is part of ES7 proposal and already supported by Firefox Nightly so I'm actively looking into this.
 
 Trying to compensate the use of outdated codec, two-pass encoding with `speed=1` and `lag-in-frames=25` is used. Splitting video in parts creates additional keyframes and therefore loses effeciency a bit, but  the difference should be negligible for the `g=128` currently used. It is also possible to specify `speed=0` or `quality=best` and other FFmpeg/libvpx options if you're trying to achieve the maximal quality.
 
@@ -44,7 +44,7 @@ inside. Host the `dist` directory with your favourite HTTP server or use `npm st
 
 webm.js own code, documentation, favicon and logo licensed under CC0, but the resulting build also includes the following libraries and assets:
 
-* FFmpeg port [ffmpeg.js](https://github.com/Kagami/ffmpeg.js) (LGPL-2.1+ and few libraries under BSD, see [full text of license](https://github.com/Kagami/ffmpeg.js/blob/master/LICENSE))
+* FFmpeg port [ffmpeg.js](https://github.com/Kagami/ffmpeg.js) (LGPL-2.1+ and few libraries under BSD, see [full license text](https://github.com/Kagami/ffmpeg.js/blob/master/LICENSE))
 * Remaining libraries in `dependencies` section of [package.json](https://github.com/Kagami/webm.js/blob/master/package.json) (BSD-like)
 * [Roboto font](https://www.google.com/fonts/specimen/Roboto) by Christian Robertson (Apache License 2.0)
 * Sample video is part of Elephants Dream movie ((c) copyright 2006, Blender Foundation / Netherlands Media Art Institute / www.elephantsdream.org)
