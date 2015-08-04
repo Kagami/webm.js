@@ -1,10 +1,2 @@
 /node_modules/
 /dist/
-/src/
-/.eslintignore
-/.eslintrc
-/.travis.yml
-/COPYING
-/README.md
-/package.json
-/webpack.config.babel.js
