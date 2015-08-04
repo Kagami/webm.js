@@ -4,7 +4,9 @@
  */
 
 import React from "react";
-import {Paper, FlatButton, Wait} from "./theme";
+import {showTime} from "./ffmpeg";
+import {Paper, FlatButton, Wait, secondaryColor} from "./theme";
+import {ShowHide} from "./util";
 
 const styles = {
   root: {
@@ -47,6 +49,12 @@ const styles = {
     whiteSpace: "pre-wrap",
     wordWrap: "break-word",
   },
+  left: {
+    width: 100,
+  },
+  right: {
+    color: secondaryColor,
+  },
 };
 
 export default React.createClass({
@@ -66,23 +74,55 @@ export default React.createClass({
            this.state.info.log :
            this.state.error ? this.state.error.log : null;
   },
+  getTracksInfo: function(type) {
+    const tracks = this.state.info[type];
+    let info = tracks.length + " track";
+    if (tracks.length !== 1) info += "s";
+    if (tracks.length) {
+      info += " (";
+      info += tracks.map(t => t.codec).join(", ");
+      info += ")";
+    }
+    return info;
+  },
+  getInfoInnerNode: function() {
+    const info = this.state.info;
+    return info ? (
+      <div>
+        <div style={styles.header}>input video info</div>
+        <div style={styles.infoInner}>
+          <table>
+            <tr>
+              <td style={styles.left}>Duration:</td>
+              <td style={styles.right}>{showTime(info.duration)}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Resolution:</td>
+              <td style={styles.right}>{info.width}x{info.height}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Video:</td>
+              <td style={styles.right}>{this.getTracksInfo("video")}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Audio:</td>
+              <td style={styles.right}>{this.getTracksInfo("audio")}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Subtitles:</td>
+              <td style={styles.right}>{this.getTracksInfo("subs")}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    ) : null;
+  },
   handleMoreClick: function() {
-    this.setState({logOpen: !this.state.logOpen});
+    this.setState({logShown: !this.state.logShown});
   },
   render: function() {
     const preload = (
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
-    );
-    const infoInner = (
-      <div>
-        <div style={styles.header}>input video info</div>
-        <div style={styles.infoInner}>
-          <div>Duration:</div>
-          <div>Video:</div>
-          <div>Audio:</div>
-          <div>Subtitles:</div>
-        </div>
-      </div>
     );
     // TODO(Kagami): Require at least one video track.
     // TODO(Kagami): Process other types of errors (Worker, emscripten,
@@ -98,23 +138,22 @@ export default React.createClass({
         </div>
       </div>
     );
-    const log = (
-      <div style={styles.log}>
-        <pre style={styles.logInner}>{this.getLogText()}</pre>
-      </div>
-    );
     const info = (
       <div>
         <div style={styles.info}>
-          {this.state.error ? errorInner : infoInner}
+          {this.state.error ? errorInner : this.getInfoInnerNode()}
           <FlatButton
             primary
             style={styles.more}
             onClick={this.handleMoreClick}
-            label={this.state.logOpen ? "hide" : "log"}
+            label={this.state.logShown ? "hide" : "log"}
           />
         </div>
-        {this.state.logOpen ? log : null}
+        <ShowHide show={this.state.logShown}>
+          <div style={styles.log}>
+            <pre style={styles.logInner}>{this.getLogText()}</pre>
+          </div>
+        </ShowHide>
       </div>
     );
     return (

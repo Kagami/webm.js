@@ -150,6 +150,7 @@ export class Prober {
     const dur = out.match(/^\s+Duration:\s+([^,]+)/m);
     assert(dur, "Failed to parse duration");
     const duration = parseTime(dur[1]);
+    let width, height;
 
     let video = [];
     let audio = [];
@@ -167,6 +168,11 @@ export class Prober {
     while ((smatch = sre.exec(out)) !== null) {
       const [id, lang, type, codec, rest] = smatch.slice(1);
       if (!has(tracks, type)) continue;
+      if (type === "Video" && width == null) {
+        const resolution = rest.match(/\b(\d+)x(\d+)\b/);
+        width = +resolution[1];
+        height = +resolution[2];
+      }
       let stream = {id, lang, codec};
       if (rest.match(/\(default\)/)) stream.default = true;
       if (rest.match(/\(forced\)/)) stream.forced = true;
@@ -179,7 +185,7 @@ export class Prober {
     // might contain metadata information not related to last stream.
     scanMetadata();
 
-    return {video, audio, subs, duration};
+    return {duration, width, height, video, audio, subs};
   }
 }
 
