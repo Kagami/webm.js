@@ -9,7 +9,7 @@ import {
   FlatButton, SelectField, ClearFix, TextField,
   RaisedButton, SmallInput,
 } from "./theme";
-import {ShowHide, has} from "./util";
+import {ShowHide, has, getDefaultVideoThreads} from "./util";
 
 const styles = {
   root: {
@@ -121,8 +121,7 @@ export default React.createClass({
     // NOTE(Kagami): We accept state variables via arguments because
     // `setState` is asynchronous and values in `this.state` might be
     // outdated.
-    // TODO(Kagami): Basic: scale, crop, custom filters.
-    // TODO(Kagami): Advanced: quality, speed, set/clear metadata.
+    // TODO(Kagami): scale, crop, custom filters, set/clear metadata.
     let opts = [];
     // This might be `Empty`.
     const limit = state.limit.toString();
@@ -397,6 +396,18 @@ export default React.createClass({
                 onBlur={this.handleEvent}
               />
             </div>
+            <ShowHide show={this.state.advanced}>
+              <div>
+                <SmallInput
+                  defaultValue={getDefaultVideoThreads()}
+                  floatingLabelText="threads (1÷8)"
+                />
+                <SmallInput
+                  defaultValue="1"
+                  floatingLabelText="speed (0÷5)"
+                />
+              </div>
+            </ShowHide>
           </div>
         </ClearFix>
         <ShowHide show={this.state.advanced}>
