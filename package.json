@@ -5,9 +5,11 @@
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --inline",
-    "build": "rm -rf dist && webpack",
+    "dev": "rm -rf dist && webpack",
+    "release": "rm -rf dist && NODE_ENV=production webpack",
     "lint": "eslint .",
-    "test": "npm run build && npm run lint"
+    "test": "npm run dev && npm run release && npm run lint",
+    "pages": "npm run release && D=`mktemp -d` && cp dist/* \"$D\" && git checkout gh-pages && mv \"$D\"/* ."
   },
   "repository": {
     "type": "git",
