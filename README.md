@@ -10,11 +10,13 @@
   <a href="https://travis-ci.org/Kagami/webm.js"><img alt="Build Status" src="https://travis-ci.org/Kagami/webm.js.svg?branch=master"></a>
 </p>
 
+---
+
 ### What's this?
 
 webm.js is a simple one-page application that allows you to convert videos to WebM format right into your browser, without any plugins or server-side involved. Since WebM is part of HTML5 stack, why can't we create one without leaving the browser?
 
-webm.js is build upon FFmpeg, libvpx and libopus which were ported to JavaScript by Emscripten.
+webm.js is built upon FFmpeg, libvpx and libopus which were ported to JavaScript using Emscripten.
 
 ### Is it fast?
 
