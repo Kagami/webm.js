@@ -48,16 +48,16 @@ export default React.createClass({
   componentWillMount: function() {
     let pool = new Pool();
     this.setState({pool});
-    // XXX(Kagami): We analyze various video/audio settings and create
-    // jobs based on single options line passed from the Params
-    // component. This is a bit hackish - better to use values from UI
+    // NOTE(Kagami): We analyze various video/audio settings and create
+    // jobs based on single options line passed from the `Params`
+    // component. This is a bit hackish - better to use values of UI
     // widgets, but since we also support raw FFmpeg options it's the
     // only way to detect features of the new encoding.
     const params = this.props.params;
     const audio = !ahas(params, "-an");
     let vthreads = 1; //+getopt(params, "-threads");
-    // FIXME(Kagami): Do not spawn more threads than number of seconds
-    // in resulting video.
+    // FIXME(Kagami): Split in parts; do not spawn more threads than
+    // number of seconds in resulting video.
     if (!Number.isInteger(vthreads) ||
         vthreads < MIN_VTHREADS ||
         vthreads > MAX_VTHREADS) {
@@ -94,11 +94,11 @@ export default React.createClass({
     }
 
     const start = new Date().getTime();
+    let jobs = [];
     addLog(mainKey);
     logMain("Spawning jobs:");
     logMain("  " + vthreads + " video thread(s)");
     if (audio) logMain("  1 audio thread");
-    let jobs = [];
 
     range(vthreads, 1).forEach(i => {
       const key = "Video " + i;
@@ -109,15 +109,16 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: videoParams1,
         onLog: logThread,
-        // TODO(Kagami): Is it ok to pass Blob/File URL to work? Does it
-        // cause additional memory consumption?
+        // FIXME(Kagami): Rename source to avoid name cluttering. Remove
+        // url parameter. Transfer unneeded data.
         files: [this.props.source],
       }).then(files => {
         logMain(key + " finished first pass");
         logMain(key + " started second pass");
-        logThread(getCmd(videoParams2));
+        const namedVideoParams2 = videoParams2.concat(i + ".webm");
+        logThread(getCmd(namedVideoParams2));
         return pool.spawnJob({
-          params: videoParams2.concat((i + ".webm")),
+          params: namedVideoParams2,
           onLog: logThread,
           // Log and source for the second pass.
           files: files.concat(this.props.source),
@@ -216,8 +217,7 @@ export default React.createClass({
     return params;
   },
   getVideoParamsPass2: function(params) {
-    // NOTE(Kagami): Name should be calculated for each part.
-    // FIXME(Kagami): Avoid cluttering with input file name.
+    // Name should be calculated for each part separately.
     params = params.concat("-an", "-pass", "2");
     return params;
   },
