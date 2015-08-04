@@ -186,11 +186,11 @@ export class Prober {
 /** Manager of FFmpeg jobs. */
 export class Pool {
   constructor() {
-    this._workers = [];
+    this.workers = [];
   }
 
   spawnJob({params, files, onLog}) {
-    let workers = this._workers;
+    let workers = this.workers;
     let worker = new Worker(WORKER_URL);
     workers.push(worker);
     function cleanup() {
@@ -254,8 +254,8 @@ export class Pool {
 
   /** Destroy the pool. Safe to run multiple times. */
   destroy() {
-    while (this._workers.length) {
-      this._workers.shift().terminate();
+    while (this.workers.length) {
+      this.workers.shift().terminate();
     }
   }
 }

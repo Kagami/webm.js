@@ -8,7 +8,11 @@ import {Pool, showTime} from "../ffmpeg";
 import {Paper, RaisedButton, LinearProgress} from "../theme";
 import Logger from "./logger";
 import Preview from "./preview";
-import {getopt, clearopt, fixopt, showSize, showNow} from "../util";
+import {
+  ahas, getopt, clearopt, fixopt, range, str2ab,
+  MIN_VTHREADS, MAX_VTHREADS, getDefaultVideoThreads,
+  showSize, showNow,
+} from "../util";
 
 const styles = {
   header: {
@@ -50,18 +54,22 @@ export default React.createClass({
     // widgets, but since we also support raw FFmpeg options it's the
     // only way to detect features of the new encoding.
     const params = this.props.params;
-    const audio = false; //!ahas(params, "-an");
+    const audio = !ahas(params, "-an");
     let vthreads = 1; //+getopt(params, "-threads");
     // FIXME(Kagami): Do not spawn more threads than number of seconds
     // in resulting video.
-    if (!Number.isInteger(vthreads) || vthreads < 1 || vthreads > 8) {
+    if (!Number.isInteger(vthreads) ||
+        vthreads < MIN_VTHREADS ||
+        vthreads > MAX_VTHREADS) {
       // We may raise an error here instead of fixing it.
-      vthreads = this.getDefaultVideoThreads();
+      vthreads = getDefaultVideoThreads();
     }
     const commonParams = this.getCommonParams(params);
     const videoParams1 = this.getVideoParamsPass1(commonParams);
     const videoParams2 = this.getVideoParamsPass2(commonParams);
     const audioParams = this.getAudioParams(commonParams);
+    const muxerParams = this.getMuxerParams({audio});
+    const concatList = this.getConcatList({vthreads});
 
     // Logging routines.
     let logsList = [];
@@ -88,10 +96,11 @@ export default React.createClass({
     const start = new Date().getTime();
     addLog(mainKey);
     logMain("Spawning jobs:");
+    logMain("  " + vthreads + " video thread(s)");
+    if (audio) logMain("  1 audio thread");
     let jobs = [];
 
-    logMain("  " + vthreads + " video thread(s)");
-    for (let i = 1; i <= vthreads; ++i) {
+    range(vthreads, 1).forEach(i => {
       const key = "Video " + i;
       const logThread = log.bind(null, key);
       addLog(key);
@@ -108,7 +117,7 @@ export default React.createClass({
         logMain(key + " started second pass");
         logThread(getCmd(videoParams2));
         return pool.spawnJob({
-          params: videoParams2,
+          params: videoParams2.concat((i + ".webm")),
           onLog: logThread,
           // Log and source for the second pass.
           files: files.concat(this.props.source),
@@ -121,9 +130,8 @@ export default React.createClass({
         throw e;
       });
       jobs.push(job);
-    }
+    });
     if (audio) {
-      logMain("  1 audio thread");
       const key = "Audio";
       const logThread = log.bind(null, key);
       addLog(key);
@@ -142,16 +150,24 @@ export default React.createClass({
       });
       jobs.push(job);
     }
-    addLog("Muxer");
+    const muxerKey = "Muxer";
+    addLog(muxerKey);
 
     const cleanup = pool.destroy.bind(pool);
     Promise.all(jobs).then(parts => {
+      // TODO(Kagami): Skip this step if vthreads=1 and audio=false?
       logMain("Muxer started");
-      // FIXME(Kagami): Mux parts.
-      return parts[0];
-    }).then(output => {
-      logMain("Muxer finished");
+      const logThread = log.bind(null, muxerKey);
+      logThread(getCmd(muxerParams));
+      return pool.spawnJob({
+        params: muxerParams,
+        onLog: logThread,
+        files: parts.concat(concatList),
+      });
+    }).then(files => {
       // TODO(Kagami): Print output duration.
+      logMain("Muxer finished");
+      const output = files[0];
       const elapsed = (new Date().getTime() - start) / 1000;
       log(mainKey, "##################################################");
       log(mainKey, "# All is done in " + showTime(elapsed));
@@ -170,14 +186,6 @@ export default React.createClass({
   },
   componentWillUnmount: function() {
     this.state.pool.destroy();
-  },
-  getDefaultVideoThreads: function() {
-    let threadNum = navigator.hardwareConcurrency || 4;
-    // Navigator will contain number of cores including HT, e.g. 8 for a
-    // CPU with 4 physical cores. This would be too much given the
-    // memory consumption, additional audio thread, etc.
-    if (threadNum > 4) threadNum = 4;
-    return threadNum;
   },
   /**
    * Return pretty filename based on the input video name.
@@ -208,13 +216,33 @@ export default React.createClass({
     return params;
   },
   getVideoParamsPass2: function(params) {
-    params = params.concat("-an");
-    params = params.concat("-pass", "2", this.getOutputFilename());
+    // NOTE(Kagami): Name should be calculated for each part.
+    // FIXME(Kagami): Avoid cluttering with input file name.
+    params = params.concat("-an", "-pass", "2");
     return params;
   },
   getAudioParams: function(params) {
-    params = params.concat("-vn");
+    // Remove video-only options to avoid warnings.
+    params = clearopt(params, "-speed");
+    params = clearopt(params, "-auto-alt-ref");
+    params = clearopt(params, "-lag-in-frames");
+    params = params.concat("-vn", "audio.webm");
     return params;
+  },
+  getMuxerParams: function({audio}) {
+    let params = ["-hide_banner", "-f", "concat", "-i", "list.txt"];
+    if (audio) params = params.concat("-i", "audio.webm");
+    params = params.concat("-c", "copy", this.getOutputFilename());
+    return params;
+  },
+  getConcatList: function({vthreads}) {
+    const list = range(vthreads, 1).map(i => {
+      return "file '" + i + ".webm'";
+    });
+    return {
+      name: "list.txt",
+      data: str2ab(list.join("\n")),
+    };
   },
   handlePreviewClick: function() {
     this.refs.preview.show();

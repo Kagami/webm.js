@@ -35,6 +35,7 @@ export default React.createClass({
     tab: {
       color: "#000",
       borderBottom: "1px solid #e0e0e0",
+      borderRight: "1px solid #e0e0e0",
     },
   },
   render: function() {

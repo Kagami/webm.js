@@ -94,3 +94,26 @@ export function showNow() {
   ts += pad2(now.getSeconds());
   return ts;
 }
+
+export function range(n, start) {
+  return [...Array(n)].map((_, i) => i + start);
+}
+
+export function str2ab(str) {
+  // Probably not so fast and won't work for non-ASCII, but ok for our
+  // use case.
+  return new Uint8Array(str.split("").map(ch => ch.charCodeAt(0)));
+}
+
+export const MIN_VTHREADS = 1;
+export const MAX_VTHREADS = 8;
+export const FALLBACK_VTHREADS = 4;
+
+export function getDefaultVideoThreads() {
+  let threadNum = navigator.hardwareConcurrency || FALLBACK_VTHREADS;
+  // Navigator will contain number of cores including HT, e.g. 8 for a
+  // CPU with 4 physical cores. This would be too much given the
+  // memory consumption, additional audio thread, etc.
+  if (threadNum > FALLBACK_VTHREADS) threadNum = FALLBACK_VTHREADS;
+  return threadNum;
+}
