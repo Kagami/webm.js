@@ -154,7 +154,6 @@ export default React.createClass({
     const muxerKey = "Muxer";
     addLog(muxerKey);
 
-    const cleanup = pool.destroy.bind(pool);
     Promise.all(jobs).then(parts => {
       // TODO(Kagami): Skip this step if vthreads=1 and audio=false?
       logMain("Muxer started");
@@ -178,12 +177,13 @@ export default React.createClass({
       log(mainKey, "# Output audio bitrate: " + getopt(params, "-b:a", "0"));
       this.setState({output});
     }, e => {
+      pool.destroy();
       let msg = "Fatal error";
       if (e.key) msg += " at " + e.key;
       msg += ": " + e.message;
       logMain(msg);
       this.setState({error: e});
-    }).then(cleanup, cleanup);
+    });
   },
   componentWillUnmount: function() {
     this.state.pool.destroy();
