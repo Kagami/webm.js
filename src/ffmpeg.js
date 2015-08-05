@@ -136,15 +136,10 @@ export class Prober {
    * @throws {Error} Failed to parse output.
    */
   static parse(lines) {
-    // TODO(Kagami): Delete this once
-    // <https://github.com/kripken/emscripten/pull/3639> will be
-    // released.
-    lines = lines.filter(line =>
-      !line.match(/^Calling stub instead of signal\(\)$/)
-    );
     lines = lines.filter(line =>
       !line.match(/^\[.*Warning: not compiled with thread support/)
     );
+    // This should now contain only common FFmpeg logging.
     const out = lines.join("\n");
 
     const dur = out.match(/^\s+Duration:\s+([^,]+)/m);
