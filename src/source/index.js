@@ -58,7 +58,9 @@ export default React.createClass({
       if (req.status >= 200 && req.status < 400) {
         const name = SAMPLE_NAME;
         const data = req.response;
-        this.props.onLoad({name, data, url: SAMPLE_URL});
+        const blob = new Blob([data]);
+        const url = URL.createObjectURL(blob);
+        this.props.onLoad({name, data, url});
       } else {
         // FIXME(Kagami): Display error in UI.
         this.setState({loadingSample: false});
