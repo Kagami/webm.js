@@ -170,7 +170,7 @@ export default React.createClass({
     // <https://github.com/callemall/material-ui/issues/295>.
     // Though we need this function anyway to fix some settings in the
     // moment of switch.
-    let upd = {mode};
+    let upd = {mode, quality: ""};
     const prevMode = this.state.mode;
     if (mode === "limit") {
       upd.limit = this.DEFAULT_LIMIT;
@@ -182,9 +182,7 @@ export default React.createClass({
       }
     } else if (mode === "constq") {
       upd.limit = 0;
-      if (!this.refs.quality.getValue()) {
-        upd.quality = this.DEFAULT_QUALITY;
-      }
+      upd.quality = this.DEFAULT_QUALITY;
     }
     this.handleUI(upd);
   },
