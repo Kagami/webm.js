@@ -20,7 +20,7 @@ webm.js is built upon FFmpeg, libvpx and libopus which were ported to JavaScript
 
 ### Is it fast?
 
-Well, partly. With the help of asm.js, Emscripten produces code almost as fast as native, but JavaScript doesn't have access to advanced x86 instructions like SSE and codecs use them far and wide so we have some performance degradation here. Not that drastical though - I had numbers like 8x worse than native@corei7-avx for libvpx-vp8 and ~4 fps (single thread, SD, medium settings). Low-level multithreading is also [not available](https://github.com/kripken/emscripten/blob/master/site/source/docs/porting/pthreads.rst) in stable versions of browsers, but luckily we can hack it up by splitting video into chunks and encoding them in separate workers.
+Well, partly. With the help of asm.js, Emscripten produces generic code almost as fast as native, but JavaScript doesn't have access to advanced x86 instructions like SSE and codecs use them far and wide so we have some performance degradation here. Not that drastical though - I had numbers like 8x worse than native@corei7-avx for libvpx-vp8 and ~4 fps (single thread, SD, medium settings). Low-level multithreading is also [not available](https://github.com/kripken/emscripten/blob/master/site/source/docs/porting/pthreads.rst) in stable versions of browsers, but luckily we can hack it up by splitting video into chunks and encoding them in separate workers.
 
 *Full-fledged benchmark here.*
 
