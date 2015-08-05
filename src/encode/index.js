@@ -109,8 +109,7 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: videoParams1,
         onLog: logThread,
-        // FIXME(Kagami): Rename source to avoid name cluttering. Remove
-        // url parameter. Transfer unneeded data.
+        // FIXME(Kagami): Rename source to avoid name cluttering.
         files: [this.props.source],
       }).then(files => {
         logMain(key + " finished first pass");

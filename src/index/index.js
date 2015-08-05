@@ -95,6 +95,9 @@ const Main = React.createClass({
     ) : null;
   },
   handleSourceLoad: function(source) {
+    // We can't transfer source because we use it many times.
+    // (See `Pool.spawnJob` for details.)
+    source = Object.assign({keep: true}, source);
     this.setState({source});
   },
   handleSourceClear: function() {

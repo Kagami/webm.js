@@ -83,7 +83,7 @@ export class Prober {
       worker.postMessage({
         type: "run",
         arguments: ["-hide_banner", "-i", source.name],
-        MEMFS: [source],
+        MEMFS: [{name: source.name, data: source.data}],
       });
       worker.onmessage = e => {
         const msg = e.data || {};
@@ -196,6 +196,15 @@ export class Pool {
   }
 
   spawnJob({params, files, onLog}) {
+    // Send/transfer only necessary data.
+    let transfer = [];
+    files = files.map(function({name, data, keep}) {
+      if (!keep) {
+        const buffer = ArrayBuffer.isView(data) ? data.buffer : data;
+        transfer.push(buffer);
+      }
+      return {name, data};
+    });
     let workers = this.workers;
     let worker = new Worker(WORKER_URL);
     workers.push(worker);
@@ -214,7 +223,7 @@ export class Pool {
               type: "run",
               arguments: params,
               MEMFS: files,
-            });
+            }, transfer);
           } else {
             cleanup();
             reject(new Error("Bad message from worker: " + msg));
@@ -240,14 +249,7 @@ export class Pool {
           break;
         case "done":
           cleanup();
-          // FIXME(Kagami): Fix this in ffmpeg.js.
-          let out = msg.data && msg.data.MEMFS || [];
-          out.forEach(f => {
-            if (!ArrayBuffer.isView(f.data)) {
-              f.data = new Uint8Array(f.data);
-            }
-          });
-          resolve(out);
+          resolve(msg.data && msg.data.MEMFS);
           break;
         }
       };
