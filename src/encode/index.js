@@ -169,7 +169,7 @@ export default React.createClass({
       logMain("Muxer finished");
       const output = files[0];
       const elapsed = (new Date().getTime() - start) / 1000;
-      log(mainKey, "##################################################");
+      log(mainKey, "==================================================");
       log(mainKey, "All is done in " + showTime(elapsed));
       log(mainKey, "Output file name: " + output.name);
       log(mainKey, "Output file size: " + showSize(output.data.byteLength));
