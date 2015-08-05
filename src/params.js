@@ -131,7 +131,7 @@ export default React.createClass({
     const duration = state.duration.toString();
 
     // Input.
-    opts.push("-i", this.props.source.name);
+    opts.push("-i", this.props.source.safeName);
     if (duration !== "") {
       // FIXME(Kagami): Fix duration in case of `useEndTime`.
       // NOTE(Kagami): We always use `-t` in resulting command because

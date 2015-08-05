@@ -117,3 +117,24 @@ export function getDefaultVideoThreads() {
   if (threadNum > FALLBACK_VTHREADS) threadNum = FALLBACK_VTHREADS;
   return threadNum;
 }
+
+/*
+ * We need to fix the input name in order to avoid cluttering with
+ * output (because we use constant names like "1.webm") and also to
+ * avoid complex whitespace escaping with rawopts.
+ *
+ * test.avi -> in.avi
+ * test -> in
+ */
+export function getSafeFilename(name) {
+  function getSafeExt(str) {
+    return str.match(/\s/) ? "" : str;
+  }
+
+  const dotIndex = name.lastIndexOf(".");
+  if (dotIndex === -1) {
+    return "in";
+  } else {
+    return "in" + getSafeExt(name.slice(dotIndex));
+  }
+}

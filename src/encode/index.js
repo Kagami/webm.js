@@ -64,6 +64,8 @@ export default React.createClass({
       // We may raise an error here instead of fixing it.
       vthreads = getDefaultVideoThreads();
     }
+    const source = this.props.source;
+    const safeSource = {name: source.safeName, data: source.data, keep: true};
     const commonParams = this.getCommonParams(params);
     const videoParams1 = this.getVideoParamsPass1(commonParams);
     const videoParams2 = this.getVideoParamsPass2(commonParams);
@@ -109,8 +111,7 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: videoParams1,
         onLog: logThread,
-        // FIXME(Kagami): Rename source to avoid name cluttering.
-        files: [this.props.source],
+        files: [safeSource],
       }).then(files => {
         logMain(key + " finished first pass");
         logMain(key + " started second pass");
@@ -120,7 +121,7 @@ export default React.createClass({
           params: namedVideoParams2,
           onLog: logThread,
           // Log and source for the second pass.
-          files: files.concat(this.props.source),
+          files: files.concat(safeSource),
         });
       }).then(files => {
         logMain(key + " finished second pass");
@@ -140,7 +141,7 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: audioParams,
         onLog: logThread,
-        files: [this.props.source],
+        files: [safeSource],
       }).then(files => {
         logMain(key + " finished");
         return files[0];
@@ -193,7 +194,8 @@ export default React.createClass({
    * in.webm -> in.webm.webm
    */
   getOutputFilename: function() {
-    let basename = this.props.source.name;
+    const name = this.props.source.name;
+    let basename = name;
     const dotIndex = name.lastIndexOf(".");
     if (dotIndex !== -1) {
       const ext = name.slice(dotIndex + 1);
@@ -231,7 +233,7 @@ export default React.createClass({
   getMuxerParams: function({audio}) {
     let params = ["-hide_banner", "-f", "concat", "-i", "list.txt"];
     if (audio) params = params.concat("-i", "audio.webm");
-    params = params.concat("-c", "copy", this.getOutputFilename());
+    params = params.concat("-c", "copy", "out.webm");
     return params;
   },
   getConcatList: function({vthreads}) {

@@ -19,7 +19,7 @@ import Preview from "../preview";
 import Info from "../info";
 import Params from "../params";
 import Encode from "../encode";
-import {ShowHide} from "../util";
+import {ShowHide, getSafeFilename} from "../util";
 // Assets.
 // TODO(Kagami): Move `name` setting to the webpack config. See
 // <https://github.com/webpack/file-loader/issues/30> for details.
@@ -97,7 +97,9 @@ const Main = React.createClass({
   handleSourceLoad: function(source) {
     // We can't transfer source because we use it many times.
     // (See `Pool.spawnJob` for details.)
-    source = Object.assign({keep: true}, source);
+    const keep = true;
+    const safeName = getSafeFilename(source.name);
+    source = Object.assign({keep, safeName}, source);
     this.setState({source});
   },
   handleSourceClear: function() {
