@@ -6,6 +6,13 @@ function insrc(...parts) {
   return new RegExp("^" + path.join(__dirname, "src", ...parts) + "$");
 }
 
+function getNameBySuffix(stats, suffix) {
+  return stats.assets.find(asset =>
+    asset.name === suffix ||
+    asset.name.slice(-suffix.length - 1) === "." + suffix
+  ).name;
+}
+
 const DEBUG = process.env.NODE_ENV !== "production";
 const JS_NAME = DEBUG ? "webm.js" : "[chunkhash:10].webm.js";
 const HTML_MINIFIER = DEBUG ? false : {
@@ -17,13 +24,7 @@ const COMMON_PLUGINS = [
   new HtmlWebpackPlugin({
     minify: HTML_MINIFIER,
     template: path.join("src", "index", "index.html"),
-    getNameBySuffix: function(stats, suffix) {
-      return stats.assets.find(
-        asset =>
-          asset.name === suffix ||
-          asset.name.slice(-suffix.length - 1) === "." + suffix
-      ).name;
-    },
+    getNameBySuffix,
   }),
 ];
 const PLUGINS = DEBUG ? COMMON_PLUGINS : COMMON_PLUGINS.concat([
@@ -34,8 +35,6 @@ const PLUGINS = DEBUG ? COMMON_PLUGINS : COMMON_PLUGINS.concat([
   }),
 ]);
 
-// TODO(Kagami): Minify JS and HTML in production mode, use hashed
-// names.
 export default {
   entry: "./src/index",
   output: {
