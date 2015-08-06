@@ -57,10 +57,9 @@ const styles = {
   },
 };
 
-// XXX(Kagami): Singleton to satisfate `TextField.hasValue` and emulate
-// filled text field because there is no other way to display floating
-// label by default.
-// TODO(Kagami): Request this feature.
+// TODO(Kagami): We use fake object to satisfate `TextField.hasValue`
+// and emulate filled text field because there is no other way to always
+// display floating label. It would be better to request this feature.
 const Empty = {
   toString: function() {
     return "";
@@ -74,8 +73,7 @@ export default React.createClass({
   componentDidMount: function() {
     this.handleUI();
     if (window.localStorage && localStorage.SKIP_PARAMS) {
-      // XXX(Kagami): Workaround asynchronous setState. Not sure whether
-      // it will always work, but this is debug-only anyway.
+      // Workaround asynchronous setState.
       setTimeout(this.handleEncodeClick);
     }
   },
@@ -108,8 +106,6 @@ export default React.createClass({
     return !!this.props.info.subs.length;
   },
   calcVideoBitrate: function({limit, audioBitrate}) {
-    limit = +limit;
-    audioBitrate = +audioBitrate;
     // FIXME(Kagami): Take start/end into account and check for zero
     // length/intersections/etc.
     const duration = this.props.info.duration;
@@ -117,27 +113,20 @@ export default React.createClass({
     const vb = Math.floor(limitKbits / duration - audioBitrate);
     return vb > 0 ? vb : 1;
   },
-  makeRawOpts: function(state) {
-    // NOTE(Kagami): We accept state variables via arguments because
-    // `setState` is asynchronous and values in `this.state` might be
-    // outdated.
+  makeRawArgs: function(opts) {
     // TODO(Kagami): scale, crop, custom filters, set/clear metadata.
-    let opts = [];
-    // This might be `Empty`.
-    const limit = state.limit.toString();
-    const quality = state.quality.toString();
-    let vb = state.mode === "limit" ? this.calcVideoBitrate(state) : +limit;
+    let args = [];
+    let vb = opts.mode === "limit" ? this.calcVideoBitrate(opts) : opts.limit;
     if (vb !== 0) vb += "k";
-    const duration = state.duration.toString();
 
     // Input.
-    opts.push("-i", this.props.source.safeName);
-    if (duration !== "") {
+    args.push("-i", this.props.source.safeName);
+    if (opts.duration !== "") {
       // FIXME(Kagami): Fix duration in case of `useEndTime`.
       // NOTE(Kagami): We always use `-t` in resulting command because
       // `-ss` before `-i` resets the timestamp, see:
       // <https://trac.ffmpeg.org/wiki/Seeking#Notes>.
-      opts.push("-t", duration);
+      args.push("-t", opts.duration);
     }
 
     // Streams.
@@ -146,23 +135,23 @@ export default React.createClass({
     // TODO(Kagami): We can improve quality a bit with "-speed 0 -g 9999".
     // Though this will slow down the encoding so we need to find the
     // best speed/quality compromise for in-browser use.
-    opts.push("-c:v", "libvpx", "-speed", "1");
-    opts.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
-    opts.push("-b:v", vb);
-    if (quality !== "") opts.push("-crf", quality);
+    args.push("-c:v", "libvpx", "-speed", "1");
+    args.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
+    args.push("-b:v", vb);
+    if (opts.quality !== "") args.push("-crf", opts.quality);
 
     // Audio.
-    if (state.noAudio) {
-      opts.push("-an");
+    if (opts.noAudio) {
+      args.push("-an");
     } else {
-      opts.push("-c:a", "libopus", "-ac", "2");
-      opts.push("-b:a", state.audioBitrate + "k");
+      args.push("-c:a", "libopus", "-ac", "2");
+      args.push("-b:a", opts.audioBitrate + "k");
     }
 
     // Subs.
-    opts.push("-sn");
+    args.push("-sn");
 
-    return opts;
+    return args;
   },
   handleMode: function(e, mode) {
     // NOTE(Kagami): `radio.getSelectedValue` isn't always up-to-date,
@@ -190,8 +179,8 @@ export default React.createClass({
     let audioBitrate = noAudio ? 0 : this.DEFAULT_AUIDIO_BITRATE;
     this.handleUI({audioBitrate});
   },
-  // Helper to ignore passed event arguments.
   handleEvent: function() {
+    // Ignore passed event arguments.
     this.handleUI();
   },
   handleSelect: function(name, e, index, payload) {
@@ -206,6 +195,9 @@ export default React.createClass({
     preState = preState || {};
     function get(option, def) {
       return has(preState, option) ? preState[option] : def;
+    }
+    function fill(str) {
+      return str === "" ? Empty : str;
     }
 
     // Getting.
@@ -223,34 +215,29 @@ export default React.createClass({
     let duration = this.refs.duration.getValue();
     let rawOpts = "";
 
-    // Fixing.
-    if (limit === "") limit = Empty;
-    if (quality === "") quality = Empty;
-    if (noAudio) audioBitrate = 0;
-    if (audioBitrate === "") audioBitrate = Empty;
-    if (start === "") start = Empty;
-    if (duration === "") duration = Empty;
-
     // FIXME(Kagami): Validation.
+    limit = +limit;
+    audioBitrate = +audioBitrate;
+    if (noAudio) audioBitrate = 0;
+
     let newState = {
       mode, videoTrack, limit, quality,
       noAudio, audioTrack, audioBitrate,
       useEndTime, burnSubs, subsTrack, start, duration,
     };
-    // FIXME(Kagami): Pass normalized values to makeRawOpts?
-    rawOpts = this.makeRawOpts(newState).join(" ");
-    newState.rawOpts = rawOpts;
+    newState.rawOpts = rawOpts = this.makeRawArgs(newState).join(" ");
 
     // Setting.
     this.setState(newState);
-    // We don't use value property of TextField because it's very slow.
-    // See: <https://github.com/callemall/material-ui/issues/1040>.
-    this.refs.limit.setValue(limit);
-    this.refs.quality.setValue(quality);
-    this.refs.audioBitrate.setValue(audioBitrate);
-    this.refs.start.setValue(start);
-    this.refs.duration.setValue(duration);
-    if (this.refs.rawOpts) this.refs.rawOpts.setValue(rawOpts);
+    // XXX(Kagami): We don't use value property of `TextField` because
+    // it's very slow, see:
+    // <https://github.com/callemall/material-ui/issues/1040>.
+    this.refs.limit.setValue(fill(limit));
+    this.refs.quality.setValue(fill(quality));
+    this.refs.audioBitrate.setValue(fill(audioBitrate));
+    this.refs.start.setValue(fill(start));
+    this.refs.duration.setValue(fill(duration));
+    if (this.refs.rawOpts) this.refs.rawOpts.setValue(fill(rawOpts));
   },
   handleUIModeClick: function() {
     this.setState({advanced: !this.state.advanced});
