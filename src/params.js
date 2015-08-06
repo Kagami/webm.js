@@ -9,7 +9,7 @@ import {
   FlatButton, SelectField, ClearFix, TextField,
   RaisedButton, SmallInput,
 } from "./theme";
-import {ShowHide, has, getDefaultVideoThreads} from "./util";
+import {ShowHide, has, DEFAULT_VTHREADS} from "./util";
 
 const styles = {
   root: {
@@ -77,14 +77,15 @@ export default React.createClass({
       setTimeout(this.handleEncodeClick);
     }
   },
+
   DEFAULT_LIMIT: 8,
   DEFAULT_QUALITY: 20,
   DEFAULT_AUIDIO_BITRATE: 64,
+  DEFAULT_DURATION: window.localStorage && localStorage.DURATION || Empty,
+  DEFAULT_SPEED: 1,
+
   getLimitLabel: function() {
     return this.state.mode === "limit" ? "limit (MiB)" : "bitrate (kbits)";
-  },
-  getDefaultDuration: function() {
-    return window.localStorage && localStorage.DURATION || Empty;
   },
   getDurationLabel: function() {
     return this.state.useEndTime ? "end (time)" : "duration (time)";
@@ -106,18 +107,17 @@ export default React.createClass({
     return !!this.props.info.subs.length;
   },
   calcVideoBitrate: function({limit, audioBitrate}) {
-    // FIXME(Kagami): Take start/end into account and check for zero
-    // length/intersections/etc.
+    // FIXME(Kagami): Take start/end into account.
     const duration = this.props.info.duration;
     const limitKbits = limit * 8 * 1024;
     const vb = Math.floor(limitKbits / duration - audioBitrate);
     return vb > 0 ? vb : 1;
   },
   makeRawArgs: function(opts) {
-    // TODO(Kagami): scale, crop, custom filters, set/clear metadata.
     let args = [];
-    let vb = opts.mode === "limit" ? this.calcVideoBitrate(opts) : opts.limit;
-    if (vb !== 0) vb += "k";
+    function maybeSet(name, value) {
+      if (value !== "") args.push(name, value);
+    }
 
     // Input.
     args.push("-i", this.props.source.safeName);
@@ -135,17 +135,23 @@ export default React.createClass({
     // TODO(Kagami): We can improve quality a bit with "-speed 0 -g 9999".
     // Though this will slow down the encoding so we need to find the
     // best speed/quality compromise for in-browser use.
-    args.push("-c:v", "libvpx", "-speed", "1");
+    let vb = opts.mode === "limit" ? this.calcVideoBitrate(opts) : opts.limit;
+    if (vb !== 0) vb += "k";
+    args.push("-c:v", "libvpx", "-b:v", vb);
+    args.push("-speed", opts.speed);
+    args.push("-threads", opts.threads);
     args.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
-    args.push("-b:v", vb);
-    if (opts.quality !== "") args.push("-crf", opts.quality);
+    maybeSet("-crf", opts.quality);
+    maybeSet("-qmin", opts.qmin);
+    maybeSet("-qmax", opts.qmax);
 
     // Audio.
     if (opts.noAudio) {
       args.push("-an");
     } else {
-      args.push("-c:a", "libopus", "-ac", "2");
+      args.push("-c:a", "libopus");
       args.push("-b:a", opts.audioBitrate + "k");
+      args.push("-ac", "2");
     }
 
     // Subs.
@@ -159,12 +165,14 @@ export default React.createClass({
     // <https://github.com/callemall/material-ui/issues/295>.
     // Though we need this function anyway to fix some settings in the
     // moment of switch.
-    let upd = {mode, quality: ""};
     const prevMode = this.state.mode;
+    let upd = {mode, quality: ""};
     if (mode === "limit") {
       upd.limit = this.DEFAULT_LIMIT;
     } else if (mode === "bitrate") {
       if (prevMode === "limit") {
+        // XXX(Kagami): State may contain outdated values if the current
+        // values in text fields are invalid.
         upd.limit = this.calcVideoBitrate(this.state);
       } else if (prevMode === "constq") {
         upd.limit = "";
@@ -193,55 +201,68 @@ export default React.createClass({
   },
   handleUI: function(preState) {
     preState = preState || {};
+    const refs = this.refs;
     function get(option, def) {
       return has(preState, option) ? preState[option] : def;
     }
-    function fill(str) {
-      return str === "" ? Empty : str;
+    function getText(name, def) {
+      def = def || "";
+      return refs[name] ? refs[name].getValue() : def;
+    }
+    function setText(name, value) {
+      if (value === "") value = Empty;
+      if (refs[name]) refs[name].setValue(value);
     }
 
-    // Getting.
-    let mode = get("mode", this.refs.mode.getSelectedValue());
+    let mode = get("mode", refs.mode.getSelectedValue());
     let videoTrack = get("videoTrack", this.state.videoTrack);
-    let limit = get("limit", this.refs.limit.getValue());
-    let quality = get("quality", this.refs.quality.getValue());
-    let noAudio = this.refs.noAudio.isChecked();
+    let limit = get("limit", getText("limit"));
+    let quality = get("quality", getText("quality"));
+    let qmin = getText("qmin");
+    let qmax = getText("qmax");
+    let noAudio = refs.noAudio.isChecked();
     let audioTrack = get("audioTrack", this.state.audioTrack);
-    let audioBitrate = get("audioBitrate", this.refs.audioBitrate.getValue());
-    let useEndTime = this.refs.useEndTime.isChecked();
-    let burnSubs = this.refs.burnSubs.isChecked();
+    let audioBitrate = get("audioBitrate", getText("audioBitrate"));
+    let useEndTime = refs.useEndTime.isChecked();
+    let burnSubs = refs.burnSubs.isChecked();
     let subsTrack = get("subsTrack", this.state.subsTrack);
-    let start = this.refs.start.getValue();
-    let duration = this.refs.duration.getValue();
+    let start = getText("start");
+    let duration = getText("duration");
+    let threads = getText("threads", DEFAULT_VTHREADS);
+    let speed = getText("speed", this.DEFAULT_SPEED);
     let rawOpts = "";
 
     // FIXME(Kagami): Validation.
     limit = +limit;
     audioBitrate = +audioBitrate;
+    threads = +threads;
+    speed = +speed;
     if (noAudio) audioBitrate = 0;
 
     let newState = {
-      mode, videoTrack, limit, quality,
+      mode, videoTrack, limit, quality, qmin, qmax,
       noAudio, audioTrack, audioBitrate,
-      useEndTime, burnSubs, subsTrack, start, duration,
+      useEndTime, burnSubs, subsTrack, start, duration, threads, speed,
     };
     newState.rawOpts = rawOpts = this.makeRawArgs(newState).join(" ");
 
-    // Setting.
     this.setState(newState);
     // XXX(Kagami): We don't use value property of `TextField` because
     // it's very slow, see:
     // <https://github.com/callemall/material-ui/issues/1040>.
-    this.refs.limit.setValue(fill(limit));
-    this.refs.quality.setValue(fill(quality));
-    this.refs.audioBitrate.setValue(fill(audioBitrate));
-    this.refs.start.setValue(fill(start));
-    this.refs.duration.setValue(fill(duration));
-    if (this.refs.rawOpts) this.refs.rawOpts.setValue(fill(rawOpts));
+    setText("limit", limit);
+    setText("quality", quality);
+    setText("qmin", qmin);
+    setText("qmax", qmax);
+    setText("audioBitrate", audioBitrate);
+    setText("start", start);
+    setText("duration", duration);
+    setText("threads", threads);
+    setText("speed", speed);
+    setText("rawOpts", rawOpts);
   },
   handleUIModeClick: function() {
     this.setState({advanced: !this.state.advanced});
-    this.handleUI();
   },
   handleEncodeClick: function() {
     const params = this.state.rawOpts.trim().split(/\s+/);
@@ -299,12 +320,16 @@ export default React.createClass({
           <ShowHide show={this.state.advanced}>
             <div>
               <SmallInput
+                ref="qmin"
                 defaultValue={Empty}
                 floatingLabelText="qmin (4÷63)"
+                onBlur={this.handleEvent}
               />
               <SmallInput
+                ref="qmax"
                 defaultValue={Empty}
                 floatingLabelText="qmax (4÷63)"
+                onBlur={this.handleEvent}
               />
             </div>
           </ShowHide>
@@ -376,7 +401,7 @@ export default React.createClass({
               />
               <SmallInput
                 ref="duration"
-                defaultValue={this.getDefaultDuration()}
+                defaultValue={this.DEFAULT_DURATION}
                 floatingLabelText={this.getDurationLabel()}
                 onBlur={this.handleEvent}
               />
@@ -384,12 +409,16 @@ export default React.createClass({
             <ShowHide show={this.state.advanced}>
               <div>
                 <SmallInput
-                  defaultValue={getDefaultVideoThreads()}
+                  ref="threads"
+                  defaultValue={DEFAULT_VTHREADS}
                   floatingLabelText="threads (1÷8)"
+                  onBlur={this.handleEvent}
                 />
                 <SmallInput
-                  defaultValue="1"
+                  ref="speed"
+                  defaultValue={this.DEFAULT_SPEED}
                   floatingLabelText="speed (0÷5)"
+                  onBlur={this.handleEvent}
                 />
               </div>
             </ShowHide>

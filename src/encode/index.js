@@ -10,7 +10,7 @@ import Logger from "./logger";
 import Preview from "./preview";
 import {
   ahas, getopt, clearopt, fixopt, range, str2ab,
-  MIN_VTHREADS, MAX_VTHREADS, getDefaultVideoThreads,
+  MIN_VTHREADS, MAX_VTHREADS, DEFAULT_VTHREADS,
   showSize, showNow,
 } from "../util";
 
@@ -62,7 +62,7 @@ export default React.createClass({
         vthreads < MIN_VTHREADS ||
         vthreads > MAX_VTHREADS) {
       // We may raise an error here instead of fixing it.
-      vthreads = getDefaultVideoThreads();
+      vthreads = DEFAULT_VTHREADS;
     }
     const source = this.props.source;
     const safeSource = {name: source.safeName, data: source.data, keep: true};

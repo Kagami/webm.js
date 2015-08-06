@@ -108,15 +108,14 @@ export function str2ab(str) {
 export const MIN_VTHREADS = 1;
 export const MAX_VTHREADS = 8;
 export const FALLBACK_VTHREADS = 4;
-
-export function getDefaultVideoThreads() {
+export const DEFAULT_VTHREADS = (function() {
   let threadNum = navigator.hardwareConcurrency || FALLBACK_VTHREADS;
   // Navigator will contain number of cores including HT, e.g. 8 for a
   // CPU with 4 physical cores. This would be too much given the
   // memory consumption, additional audio thread, etc.
   if (threadNum > FALLBACK_VTHREADS) threadNum = FALLBACK_VTHREADS;
   return threadNum;
-}
+})();
 
 /*
  * We need to fix the input name in order to avoid cluttering with
