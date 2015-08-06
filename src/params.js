@@ -93,7 +93,16 @@ export default React.createClass({
   getItems: function(type) {
     return this.props.info[type].map(track => {
       let text = `#${track.id} - ${track.codec}`;
-      if (track.default) text += " (default)";
+      if (track.lang || track.default || track.forced) {
+        text += " (";
+        let chunks = [];
+        if (track.lang) chunks.push(track.lang);
+        if (track.default) chunks.push("default");
+        if (track.forced) chunks.push("forced");
+        text += chunks.join(", ");
+        text += ")";
+      }
+      if (track.title) text += " " + track.title;
       return {payload: track.id, text};
     });
   },
@@ -120,6 +129,7 @@ export default React.createClass({
     }
 
     // Input.
+    maybeSet("-ss", opts.start);
     args.push("-i", this.props.source.safeName);
     if (opts.duration !== "") {
       // FIXME(Kagami): Fix duration in case of `useEndTime`.
@@ -130,6 +140,10 @@ export default React.createClass({
     }
 
     // Streams.
+    if (opts.videoTrack != null || opts.audioTrack != null) {
+      args.push("-map", "0:" + (opts.videoTrack || "v:0"));
+      args.push("-map", "0:" + (opts.audioTrack || "a:0"));
+    }
 
     // Video.
     // TODO(Kagami): We can improve quality a bit with "-speed 0 -g 9999".
