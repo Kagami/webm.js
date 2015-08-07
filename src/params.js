@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import {parseTime} from "./ffmpeg";
 import {
   Paper, RadioButtonGroup, RadioButton, Checkbox,
   FlatButton, SelectField, ClearFix, TextField,
@@ -90,7 +91,7 @@ export default React.createClass({
   getDurationLabel: function() {
     return this.state.useEndTime ? "end (time)" : "duration (time)";
   },
-  getItems: function(type) {
+  getItems: function(type, relIndex) {
     return this.props.info[type].map(track => {
       let text = `#${track.id} - ${track.codec}`;
       if (track.lang || track.default || track.forced) {
@@ -103,7 +104,9 @@ export default React.createClass({
         text += ")";
       }
       if (track.title) text += " " + track.title;
-      return {payload: track.id, text};
+      // subtitles filter accepts relative sub index.
+      const payload = type === "subs" && relIndex ? track.si : track.id;
+      return {payload, text};
     });
   },
   // NOTE(Kagami): We will always have video tracks because we checked
@@ -124,13 +127,17 @@ export default React.createClass({
   },
   makeRawArgs: function(opts) {
     let args = [];
+    let vfilters = [];
+    const safeName = this.props.source.safeName;
+    const vb = opts.mode === "limit" ? this.calcVideoBitrate(opts) : opts.limit;
+    const subDelay = parseTime(opts.start || 0);
     function maybeSet(name, value) {
       if (value !== "") args.push(name, value);
     }
 
     // Input.
     maybeSet("-ss", opts.start);
-    args.push("-i", this.props.source.safeName);
+    args.push("-i", safeName);
     if (opts.duration !== "") {
       // FIXME(Kagami): Fix duration in case of `useEndTime`.
       // NOTE(Kagami): We always use `-t` in resulting command because
@@ -149,15 +156,31 @@ export default React.createClass({
     // TODO(Kagami): We can improve quality a bit with "-speed 0 -g 9999".
     // Though this will slow down the encoding so we need to find the
     // best speed/quality compromise for in-browser use.
-    let vb = opts.mode === "limit" ? this.calcVideoBitrate(opts) : opts.limit;
-    if (vb !== 0) vb += "k";
-    args.push("-c:v", "libvpx", "-b:v", vb);
-    args.push("-speed", opts.speed);
     args.push("-threads", opts.threads);
+    args.push("-c:v", "libvpx", "-b:v", vb === 0 ? 0 : vb + "k");
+    args.push("-speed", opts.speed);
     args.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
     maybeSet("-crf", opts.quality);
     maybeSet("-qmin", opts.qmin);
     maybeSet("-qmax", opts.qmax);
+
+    // Subs.
+    // We only burn them currently because browsers don't display WebVTT
+    // subs in normal <video> elements and because all firefox versions
+    // < ~40 can't play webms with subtitles track at all.
+    args.push("-sn");
+    if (opts.burnSubs) {
+      if (subDelay) vfilters.push("setpts=PTS+" + subDelay + "/TB");
+      let subtitles = "subtitles=" + safeName;
+      if (opts.subsTrack != null) subtitles += ":si=" + opts.subsTrack;
+      vfilters.push(subtitles);
+      if (subDelay) vfilters.push("setpts=PTS-STARTPTS");
+    }
+
+    // Filters.
+    if (vfilters.length) {
+      args.push("-vf", vfilters.join(","));
+    }
 
     // Audio.
     if (opts.noAudio) {
@@ -167,9 +190,6 @@ export default React.createClass({
       args.push("-b:a", opts.audioBitrate + "k");
       args.push("-ac", "2");
     }
-
-    // Subs.
-    args.push("-sn");
 
     return args;
   },
@@ -402,7 +422,7 @@ export default React.createClass({
               hintText="Subtitles track"
               // disabled={!this.state.burnSubs}
               onChange={this.handleSelect.bind(null, "subsTrack")}
-              menuItems={this.getItems("subs")}
+              menuItems={this.getItems("subs", this.state.burnSubs)}
             />
           </div>
           <div style={styles.right}>

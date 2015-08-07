@@ -127,7 +127,7 @@ export const DEFAULT_VTHREADS = (function() {
  */
 export function getSafeFilename(name) {
   function getSafeExt(str) {
-    return str.match(/\s/) ? "" : str;
+    return str.match(/^\.\w+$/) ? str : "";
   }
 
   const dotIndex = name.lastIndexOf(".");

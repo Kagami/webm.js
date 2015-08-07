@@ -13,6 +13,7 @@ const WORKER_URL = require(
 
 // Taken from webm.py
 export function parseTime(time) {
+  // TODO(Kagami): Should we check for positiveness?
   if (Number.isFinite(time)) return time;
   if (time === "N/A") return Number.MAX_SAFE_INTEGER;
   // [hh]:[mm]:[ss[.xxx]]
@@ -153,6 +154,7 @@ export class Prober {
     let tracks = {Video: video, Audio: audio, Subtitle: subs};
     let sre = /^\s+Stream\s+#0:(\d+)(?:\((\w+)\))?:\s+(\w+):\s+(\w+)(.*)/mg;
     let smatch, lastStream, lastIndex;
+    let si = 0;
     function scanMetadata(index) {
       if (lastStream) {
         const meta = out.slice(lastIndex, index);
@@ -169,6 +171,7 @@ export class Prober {
         height = +resolution[2];
       }
       let stream = {id, lang, codec};
+      if (type === "Subtitle") stream.si = si++;
       if (rest.match(/\(default\)/)) stream.default = true;
       if (rest.match(/\(forced\)/)) stream.forced = true;
       tracks[type].push(stream);
