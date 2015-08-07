@@ -13,12 +13,11 @@ const WORKER_URL = require(
 
 // Taken from webm.py
 export function parseTime(time) {
-  // TODO(Kagami): Should we check for positiveness?
   if (Number.isFinite(time)) return time;
   if (time === "N/A") return Number.MAX_SAFE_INTEGER;
   // [hh]:[mm]:[ss[.xxx]]
   const m = time.match(/^(?:(\d+):)?(?:(\d+)+:)?(\d+(?:\.\d+)?)$/);
-  assert(m, "Invalid time " + time);
+  assert(m, "Invalid time");
   const [hours, minutes, seconds] = m.slice(1);
   let duration = Number(seconds);
   if (hours) {

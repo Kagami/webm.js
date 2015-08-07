@@ -10,7 +10,10 @@ import {
   FlatButton, SelectField, ClearFix, TextField,
   RaisedButton, SmallInput,
 } from "./theme";
-import {ShowHide, has, DEFAULT_VTHREADS} from "./util";
+import {
+  ShowHide, has,
+  MIN_VTHREADS, DEFAULT_VTHREADS, MAX_VTHREADS
+} from "./util";
 
 const styles = {
   root: {
@@ -80,10 +83,16 @@ export default React.createClass({
   },
 
   DEFAULT_LIMIT: 8,
+  MIN_Q: 4,
   DEFAULT_QUALITY: 20,
+  MAX_Q: 63,
+  MIN_AUIDIO_BITRATE: 6,
   DEFAULT_AUIDIO_BITRATE: 64,
+  MAX_AUIDIO_BITRATE: 510,
   DEFAULT_DURATION: window.localStorage && localStorage.DURATION || Empty,
+  MIN_SPEED: 0,
   DEFAULT_SPEED: 1,
+  MAX_SPEED: 5,
 
   getLimitLabel: function() {
     return this.state.mode === "limit" ? "limit (MiB)" : "bitrate (kbits)";
@@ -123,6 +132,7 @@ export default React.createClass({
     const duration = this.props.info.duration;
     const limitKbits = limit * 8 * 1024;
     const vb = Math.floor(limitKbits / duration - audioBitrate);
+    // We may raise an error here instead of fixing it.
     return vb > 0 ? vb : 1;
   },
   makeRawArgs: function(opts) {
@@ -158,11 +168,11 @@ export default React.createClass({
     // best speed/quality compromise for in-browser use.
     args.push("-threads", opts.threads);
     args.push("-c:v", "libvpx", "-b:v", vb === 0 ? 0 : vb + "k");
-    args.push("-speed", opts.speed);
-    args.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
     maybeSet("-crf", opts.quality);
     maybeSet("-qmin", opts.qmin);
     maybeSet("-qmax", opts.qmax);
+    args.push("-speed", opts.speed);
+    args.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
 
     // Subs.
     // We only burn them currently because browsers don't display WebVTT
@@ -205,11 +215,7 @@ export default React.createClass({
       upd.limit = this.DEFAULT_LIMIT;
     } else if (mode === "bitrate") {
       if (prevMode === "limit") {
-        // XXX(Kagami): State may contain outdated values if the current
-        // values in text fields are invalid.
         upd.limit = this.calcVideoBitrate(this.state);
-      } else if (prevMode === "constq") {
-        upd.limit = "";
       }
     } else if (mode === "constq") {
       upd.limit = 0;
@@ -248,6 +254,36 @@ export default React.createClass({
       if (refs[name]) refs[name].setValue(value);
     }
 
+    let valid = true;
+    function requireInt(value) {
+      value = value.toString();
+      if (!/^\d+$/.exec(value)) throw new Error("Integer required");
+      return +value;
+    }
+    function requireFloat(value) {
+      value = value.toString();
+      if (!/^\d+(\.\d+)?$/.exec(value)) throw new Error("Float required");
+      return +value;
+    }
+    function requireRange(value, min, max) {
+      if (value < min || value > max) throw new Error("Bad range");
+      return value;
+    }
+    const validate = (value, errKey, validator) => {
+      let res = value;
+      let errRes;
+      try {
+        res = validator(value);
+      } catch(e) {
+        errRes = e.message;
+        valid = false;
+      }
+      let errState = {valid};
+      errState[errKey] = errRes;
+      this.setState(errState);
+      return res;
+    };
+
     let mode = get("mode", refs.mode.getSelectedValue());
     let videoTrack = get("videoTrack", this.state.videoTrack);
     let limit = get("limit", getText("limit"));
@@ -266,21 +302,52 @@ export default React.createClass({
     let speed = getText("speed", this.DEFAULT_SPEED);
     let rawOpts = "";
 
-    // FIXME(Kagami): Validation.
-    limit = +limit;
-    audioBitrate = +audioBitrate;
-    threads = +threads;
-    speed = +speed;
-    if (noAudio) audioBitrate = 0;
+    // Validate & transform.
+    limit = validate(limit, "limitErr", (v) => {
+      v = requireFloat(v);
+      if (mode === "limit" && v <= 0) throw new Error("Value is too small");
+      return v;
+    });
+    quality = validate(quality, "qualityErr", (v) => {
+      if (v === "") return v;
+      v = requireInt(v);
+      return requireRange(v, this.MIN_Q, this.MAX_Q);
+    });
+    qmin = validate(qmin, "qminErr", (v) => {
+      if (v === "") return v;
+      v = requireInt(v);
+      return requireRange(v, this.MIN_Q, this.MAX_Q);
+    });
+    qmax = validate(qmax, "qmaxErr", (v) => {
+      if (v === "") return v;
+      v = requireInt(v);
+      return requireRange(v, this.MIN_Q, this.MAX_Q);
+    });
+    audioBitrate = validate(audioBitrate, "audioBitrateErr", (v) => {
+      v = requireFloat(v);
+      if (noAudio) return 0;
+      return requireRange(v, this.MIN_AUIDIO_BITRATE, this.MAX_AUIDIO_BITRATE);
+    });
+    start = validate(start, "startErr", (v) => {
+      if (v === "") return v;
+      parseTime(v);
+      return v;
+    });
+    duration = validate(duration, "durationErr", (v) => {
+      if (v === "") return v;
+      parseTime(v);
+      return v;
+    });
+    threads = validate(threads, "threadsErr", (v) => {
+      v = requireInt(v);
+      return requireRange(v, MIN_VTHREADS, MAX_VTHREADS);
+    });
+    speed = validate(speed, "speedErr", (v) => {
+      v = requireInt(v);
+      return requireRange(v, this.MIN_SPEED, this.MAX_SPEED);
+    });
 
-    let newState = {
-      mode, videoTrack, limit, quality, qmin, qmax,
-      noAudio, audioTrack, audioBitrate,
-      useEndTime, burnSubs, subsTrack, start, duration, threads, speed,
-    };
-    newState.rawOpts = rawOpts = this.makeRawArgs(newState).join(" ");
-
-    this.setState(newState);
+    // Always update text fields in order to enforce filled style.
     // XXX(Kagami): We don't use value property of `TextField` because
     // it's very slow, see:
     // <https://github.com/callemall/material-ui/issues/1040>.
@@ -293,7 +360,17 @@ export default React.createClass({
     setText("duration", duration);
     setText("threads", threads);
     setText("speed", speed);
+    if (!valid) return;
+
+    // Set validated and normalized values.
+    let newState = {
+      mode, videoTrack, limit, quality, qmin, qmax,
+      noAudio, audioTrack, audioBitrate,
+      useEndTime, burnSubs, subsTrack, start, duration, threads, speed,
+    };
+    newState.rawOpts = rawOpts = this.makeRawArgs(newState).join(" ");
     setText("rawOpts", rawOpts);
+    this.setState(newState);
   },
   handleUIModeClick: function() {
     this.setState({advanced: !this.state.advanced});
@@ -336,6 +413,7 @@ export default React.createClass({
           <div>
             <SmallInput
               ref="limit"
+              errorText={this.state.limitErr}
               defaultValue={this.DEFAULT_LIMIT}
               floatingLabelText={this.getLimitLabel()}
               disabled={this.state.mode === "constq"}
@@ -343,6 +421,7 @@ export default React.createClass({
             />
             <SmallInput
               ref="quality"
+              errorText={this.state.qualityErr}
               // NOTE(Kagami): This is not mandatory since we set it
               // `handleUI` anyway but omitting it here would cause a
               // noticeable flash.
@@ -355,12 +434,14 @@ export default React.createClass({
             <div>
               <SmallInput
                 ref="qmin"
+                errorText={this.state.qminErr}
                 defaultValue={Empty}
                 floatingLabelText="qmin (4÷63)"
                 onBlur={this.handleEvent}
               />
               <SmallInput
                 ref="qmax"
+                errorText={this.state.qmaxErr}
                 defaultValue={Empty}
                 floatingLabelText="qmax (4÷63)"
                 onBlur={this.handleEvent}
@@ -393,6 +474,7 @@ export default React.createClass({
         <div style={styles.right}>
           <SmallInput
             ref="audioBitrate"
+            errorText={this.state.audioBitrateErr}
             defaultValue={this.DEFAULT_AUIDIO_BITRATE}
             floatingLabelText="bitrate (kbits)"
             disabled={this.state.noAudio}
@@ -429,12 +511,14 @@ export default React.createClass({
             <div>
               <SmallInput
                 ref="start"
+                errorText={this.state.startErr}
                 defaultValue={Empty}
                 floatingLabelText="start (time)"
                 onBlur={this.handleEvent}
               />
               <SmallInput
                 ref="duration"
+                errorText={this.state.durationErr}
                 defaultValue={this.DEFAULT_DURATION}
                 floatingLabelText={this.getDurationLabel()}
                 onBlur={this.handleEvent}
@@ -444,12 +528,14 @@ export default React.createClass({
               <div>
                 <SmallInput
                   ref="threads"
+                  errorText={this.state.threadsErr}
                   defaultValue={DEFAULT_VTHREADS}
                   floatingLabelText="threads (1÷8)"
                   onBlur={this.handleEvent}
                 />
                 <SmallInput
                   ref="speed"
+                  errorText={this.state.speedErr}
                   defaultValue={this.DEFAULT_SPEED}
                   floatingLabelText="speed (0÷5)"
                   onBlur={this.handleEvent}
@@ -483,6 +569,7 @@ export default React.createClass({
             style={styles.bigButton}
             primary
             label="start encoding"
+            disabled={!this.state.valid}
             onClick={this.handleEncodeClick}
           />
         </div>
