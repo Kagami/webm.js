@@ -36,10 +36,11 @@ const styles = {
   },
   left: {
     float: "left",
-    width: "60%",
+    width: 280,
   },
   right: {
-    float: "left",
+    float: "right",
+    width: 380,
     marginTop: -30,
   },
   smallSelect: {
@@ -58,6 +59,9 @@ const styles = {
     bottom: 0,
     right: 0,
     borderRadius: 0,
+  },
+  spaceBelow: {
+    marginBottom: 5,
   },
 };
 
@@ -388,6 +392,7 @@ export default React.createClass({
             name="mode"
             defaultSelected="limit"
             onChange={this.handleMode}
+            style={styles.spaceBelow}
           >
             <RadioButton
               value="limit"
@@ -410,7 +415,7 @@ export default React.createClass({
           />
         </div>
         <div style={styles.right}>
-          <div>
+          <ClearFix>
             <SmallInput
               ref="limit"
               errorText={this.state.limitErr}
@@ -429,9 +434,9 @@ export default React.createClass({
               floatingLabelText="quality (4÷63)"
               onBlur={this.handleEvent}
             />
-          </div>
+          </ClearFix>
           <ShowHide show={this.state.advanced}>
-            <div>
+            <ClearFix>
               <SmallInput
                 ref="qmin"
                 errorText={this.state.qminErr}
@@ -446,7 +451,7 @@ export default React.createClass({
                 floatingLabelText="qmax (4÷63)"
                 onBlur={this.handleEvent}
               />
-            </div>
+            </ClearFix>
           </ShowHide>
         </div>
       </ClearFix>
@@ -460,6 +465,7 @@ export default React.createClass({
             onCheck={this.handleNoAudio}
             disabled={!this.hasAudioTracks()}
             defaultChecked={!this.hasAudioTracks()}
+            style={styles.spaceBelow}
           />
           <SelectField
             value={this.state.audioTrack}
@@ -498,6 +504,7 @@ export default React.createClass({
               onCheck={this.handleEvent}
               disabled={!this.hasSubsTracks()}
               defaultChecked={this.hasSubsTracks()}
+              style={styles.spaceBelow}
             />
             <SelectField
               value={this.state.subsTrack}
@@ -508,7 +515,7 @@ export default React.createClass({
             />
           </div>
           <div style={styles.right}>
-            <div>
+            <ClearFix>
               <SmallInput
                 ref="start"
                 errorText={this.state.startErr}
@@ -523,9 +530,9 @@ export default React.createClass({
                 floatingLabelText={this.getDurationLabel()}
                 onBlur={this.handleEvent}
               />
-            </div>
+            </ClearFix>
             <ShowHide show={this.state.advanced}>
-              <div>
+              <ClearFix>
                 <SmallInput
                   ref="threads"
                   errorText={this.state.threadsErr}
@@ -540,7 +547,7 @@ export default React.createClass({
                   floatingLabelText="speed (0÷5)"
                   onBlur={this.handleEvent}
                 />
-              </div>
+              </ClearFix>
             </ShowHide>
           </div>
         </ClearFix>
@@ -552,6 +559,7 @@ export default React.createClass({
             multiLine
             fullWidth
             onBlur={this.handleRawOpts}
+            style={styles.spaceBelow}
           />
         </ShowHide>
       </div>
