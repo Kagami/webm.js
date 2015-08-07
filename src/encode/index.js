@@ -46,8 +46,7 @@ export default React.createClass({
     return {};
   },
   componentWillMount: function() {
-    let pool = new Pool();
-    this.setState({pool});
+    let pool = this.pool = new Pool();
     // NOTE(Kagami): We analyze various video/audio settings and create
     // jobs based on single options line passed from the `Params`
     // component. This is a bit hackish - better to use values of UI
@@ -189,7 +188,8 @@ export default React.createClass({
     });
   },
   componentWillUnmount: function() {
-    this.state.pool.destroy();
+    clearTimeout(this.timeout);
+    this.pool.destroy();
   },
   /**
    * Return pretty filename based on the input video name.
@@ -248,6 +248,18 @@ export default React.createClass({
       data: str2ab(list.join("\n")),
     };
   },
+  getCancelLabel: function() {
+    return this.state.waitingConfirm
+      ? "sure?"
+      : (this.state.output || this.state.error) ? "back" : "cancel";
+  },
+  handleCancelClick: function() {
+    if (this.state.waitingConfirm) return this.props.onCancel();
+    this.setState({waitingConfirm: true});
+    this.timeout = setTimeout(() => {
+      this.setState({waitingConfirm: false});
+    }, 1000);
+  },
   handlePreviewClick: function() {
     this.refs.preview.show();
   },
@@ -282,9 +294,8 @@ export default React.createClass({
             <RaisedButton
               style={styles.bigButton}
               primary={!done}
-              label={done ? "back" : "cancel"}
-              // TODO(Kagami): Confirm action.
-              onClick={this.props.onCancel}
+              label={this.getCancelLabel()}
+              onClick={this.handleCancelClick}
             />
             <a href={url} download={outname}>
               <RaisedButton
