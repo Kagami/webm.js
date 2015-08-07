@@ -10,6 +10,13 @@ export default React.createClass({
   getInitialState: function() {
     return {};
   },
+  componentDidMount: function() {
+    document.addEventListener("keydown", this.handleKeyDown);
+  },
+  componentWillUnmount: function() {
+    document.removeEventListener("keydown", this.handleKeyDown);
+  },
+  KEY_ESC: 27,
   styles: {
     outer: {
       position: "fixed",
@@ -19,6 +26,7 @@ export default React.createClass({
       height: "100%",
       zIndex: "1000",
       display: "table",
+      backgroundColor: "rgba(0,0,0,.7)",
     },
     inner: {
       display: "table-cell",
@@ -31,18 +39,44 @@ export default React.createClass({
       display: "inline-block",
     },
   },
+  cssFixes: (function() {
+    const body = document.body;
+    let origOverflow;
+    let origPadding;
+    return {
+      enable: function() {
+        origOverflow = body.style.overflow;
+        origPadding = body.style["padding-right"];
+        const widthWithScroll = body.clientWidth;
+        body.style.overflow = "hidden";
+        const scrollWidth = body.clientWidth - widthWithScroll;
+        body.style["padding-right"] = scrollWidth + "px";
+      },
+      disable: function() {
+        body.style.overflow = origOverflow;
+        body.style["padding-right"] = origPadding;
+      },
+    };
+  })(),
   show: function() {
+    if (this.state.open) return;
+    this.cssFixes.enable();
     this.setState({open: true});
   },
-  handleOuterClick: function() {
+  hide: function() {
+    if (!this.state.open) return;
+    this.cssFixes.disable();
     this.setState({open: false});
+  },
+  handleKeyDown: function(e) {
+    if (e.which === this.KEY_ESC) this.hide();
   },
   handleVideoClick: function(e) {
     e.stopPropagation();
   },
   render: function() {
     return this.state.open ? (
-      <div style={this.styles.outer} onClick={this.handleOuterClick}>
+      <div style={this.styles.outer} onClick={this.hide}>
         <div style={this.styles.inner}>
           <video
             onClick={this.handleVideoClick}
