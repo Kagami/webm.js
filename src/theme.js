@@ -118,6 +118,7 @@ export const SmallInput = React.createClass({
     smallInput: {
       width: 110,
       marginRight: 10,
+      float: "left",
     },
   },
   // Wrap TextField's methods. Seems like this is the recommended way in
