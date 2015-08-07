@@ -11,10 +11,10 @@ export default React.createClass({
     return {};
   },
   componentDidMount: function() {
-    document.addEventListener("keydown", this.handleKeyDown);
+    document.addEventListener("keydown", this.handleKeyDown, false);
   },
   componentWillUnmount: function() {
-    document.removeEventListener("keydown", this.handleKeyDown);
+    document.removeEventListener("keydown", this.handleKeyDown, false);
   },
   KEY_ESC: 27,
   styles: {

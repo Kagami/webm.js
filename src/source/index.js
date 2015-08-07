@@ -34,9 +34,23 @@ export default React.createClass({
   handleBoxClick: function() {
     React.findDOMNode(this.refs.file).click();
   },
-  handleFile: function() {
+  handleDragOver: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  },
+  handleDrop: function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files.length) this.handleFile(files[0]);
+  },
+  handleInput: function() {
+    const files = React.findDOMNode(this.refs.file).files;
+    this.handleFile(files[0]);
+  },
+  handleFile: function(file) {
     // TODO(Kagami): Show error for non-video files.
-    const file = React.findDOMNode(this.refs.file).files[0];
     const name = file.name;
     const url = URL.createObjectURL(file);
     const reader = new FileReader();
@@ -66,11 +80,16 @@ export default React.createClass({
     return this.state.loadingSample ? (
       <Center><Wait>Loading sample</Wait></Center>
     ) : (
-      <Center style={styles.border} onClick={this.handleBoxClick}>
+      <Center
+        style={styles.border}
+        onClick={this.handleBoxClick}
+        onDragOver={this.handleDragOver}
+        onDrop={this.handleDrop}
+      >
         <input
           type="file"
           style={styles.hidden}
-          onChange={this.handleFile}
+          onChange={this.handleInput}
           ref="file"
         />
         <div>Click/drag your input video here</div>
