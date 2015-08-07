@@ -137,3 +137,22 @@ export function getSafeFilename(name) {
     return "in" + getSafeExt(name.slice(dotIndex));
   }
 }
+
+export function download(url) {
+  return new Promise(function(resolve, reject) {
+    let req = new XMLHttpRequest();
+    req.open("GET", url, true);
+    req.responseType = "arraybuffer";
+    req.onload = function() {
+      if (req.status >= 200 && req.status < 400) {
+        resolve(req.response);
+      } else {
+        reject(new Error(req.status));
+      }
+    };
+    req.onerror = function(e) {
+      reject(e);
+    };
+    req.send();
+  });
+}

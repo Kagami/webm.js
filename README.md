@@ -47,6 +47,7 @@ webm.js own code, documentation, favicon and logo licensed under CC0, but the re
 * FFmpeg port [ffmpeg.js](https://github.com/Kagami/ffmpeg.js) (LGPL-2.1+ and few libraries under BSD, see [full license text](https://github.com/Kagami/ffmpeg.js/blob/master/LICENSE))
 * Remaining libraries in `dependencies` section of [package.json](https://github.com/Kagami/webm.js/blob/master/package.json) (BSD-like)
 * [Roboto font](https://www.google.com/fonts/specimen/Roboto) by Christian Robertson (Apache License 2.0)
+* [Liberation Sans font](https://fedorahosted.org/liberation-fonts/) (SIL Open Font License 1.1)
 * Sample video is part of Elephants Dream movie ((c) copyright 2006, Blender Foundation / Netherlands Media Art Institute / www.elephantsdream.org)
 * [GitHub Ribbon](https://github.com/blog/273-github-ribbons) (MIT)
 

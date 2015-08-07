@@ -54,6 +54,7 @@ export default React.createClass({
     // widgets, but since we also support raw FFmpeg options it's the
     // only way to detect features of the new encoding.
     const params = this.props.params;
+    const burnSubs = /\bsubtitles=/.test(getopt(params, "-vf", ""));
     const audio = !ahas(params, "-an");
     let vthreads = 1; //+getopt(params, "-threads");
     // FIXME(Kagami): Split in parts; do not spawn more threads than
@@ -65,7 +66,9 @@ export default React.createClass({
       vthreads = DEFAULT_VTHREADS;
     }
     const source = this.props.source;
+    const subFont = this.props.subFont;
     const safeSource = {name: source.safeName, data: source.data, keep: true};
+    const videoSources = burnSubs ? [safeSource, subFont] : [safeSource];
     const commonParams = this.getCommonParams(params);
     const videoParams1 = this.getVideoParamsPass1(commonParams);
     const videoParams2 = this.getVideoParamsPass2(commonParams);
@@ -111,7 +114,7 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: videoParams1,
         onLog: logThread,
-        files: [safeSource],
+        files: videoSources,
       }).then(files => {
         logMain(key + " finished first pass");
         logMain(key + " started second pass");
@@ -121,7 +124,7 @@ export default React.createClass({
           params: namedVideoParams2,
           onLog: logThread,
           // Log and source for the second pass.
-          files: files.concat(safeSource),
+          files: videoSources.concat(files),
         });
       }).then(files => {
         logMain(key + " finished second pass");

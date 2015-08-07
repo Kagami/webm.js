@@ -5,6 +5,7 @@
 
 import React from "react";
 import {InlineButton, Center, Wait, secondaryColor} from "../theme";
+import {download} from "../util";
 
 const SAMPLE_NAME = "ed.webm";
 const SAMPLE_URL = require("file?name=[name].[ext]!./ed.webm");
@@ -51,26 +52,15 @@ export default React.createClass({
   handleSampleClick: function(e) {
     if (e) e.stopPropagation();
     this.setState({loadingSample: true});
-    let req = new XMLHttpRequest();
-    req.open("GET", SAMPLE_URL, true);
-    req.responseType = "arraybuffer";
-    req.onload = () => {
-      if (req.status >= 200 && req.status < 400) {
-        const name = SAMPLE_NAME;
-        const data = req.response;
-        const blob = new Blob([data]);
-        const url = URL.createObjectURL(blob);
-        this.props.onLoad({name, data, url});
-      } else {
-        // FIXME(Kagami): Display error in UI.
-        this.setState({loadingSample: false});
-      }
-    };
-    req.onerror = () => {
+    download(SAMPLE_URL).then(data => {
+      const name = SAMPLE_NAME;
+      const blob = new Blob([data]);
+      const url = URL.createObjectURL(blob);
+      this.props.onLoad({name, data, url});
+    }, () => {
       // FIXME(Kagami): Display error in UI.
       this.setState({loadingSample: false});
-    };
-    req.send();
+    });
   },
   render: function() {
     return this.state.loadingSample ? (

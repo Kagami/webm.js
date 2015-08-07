@@ -19,7 +19,7 @@ import Preview from "../preview";
 import Info from "../info";
 import Params from "../params";
 import Encode from "../encode";
-import {ShowHide, getSafeFilename} from "../util";
+import {ShowHide, getSafeFilename, download} from "../util";
 // Assets.
 // TODO(Kagami): Move `name` setting to the webpack config. See
 // <https://github.com/webpack/file-loader/issues/30> for details.
@@ -27,6 +27,11 @@ import "file?name=[hash:10].[name].[ext]!./roboto-regular.woff";
 import "file?name=[hash:10].[name].[ext]!./roboto-medium.woff";
 import "file?name=[hash:10].[name].[ext]!./ribbon.png";
 import "file?name=[hash:10].[name].[ext]!./logo.png";
+const SUB_FONT_NAME = "default.ttf";
+const SUB_FONT_URL = require(
+  "file?name=[hash:10].[name].[ext]!" +
+  "./liberationsans-regular.ttf"
+);
 
 const Main = React.createClass({
   childContextTypes: {
@@ -39,7 +44,11 @@ const Main = React.createClass({
     return {muiTheme: themeManager.getCurrentTheme()};
   },
   componentDidMount: function() {
-    Prober.spawn().then(prober => {
+    download(SUB_FONT_URL).then(data => {
+      const subFont = {name: SUB_FONT_NAME, keep: true, data};
+      this.setState({subFont});
+      return Prober.spawn();
+    }).then(prober => {
       this.setState({prober});
     }).catch(e => {
       // FIXME(Kagami): Display error in UI.
@@ -90,6 +99,7 @@ const Main = React.createClass({
       <Encode
         source={this.state.source}
         params={this.state.params}
+        subFont={this.state.subFont}
         onCancel={this.handleEncodeCancel}
       />
     ) : null;
