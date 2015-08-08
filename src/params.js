@@ -240,12 +240,14 @@ export default React.createClass({
   handleRawOpts: function(e) {
     this.setState({rawArgs: e.target.value});
   },
+  // FIXME(Kagami): Someone, please refactor this shit in React-way.
   handleUI: function(preState) {
     preState = preState || {};
-    const refs = this.refs;
     function get(option, def) {
       return has(preState, option) ? preState[option] : def;
     }
+
+    const refs = this.refs;
     function getText(name, def) {
       def = def || "";
       return refs[name] ? refs[name].getValue() : def;
@@ -301,7 +303,11 @@ export default React.createClass({
     let duration = getText("duration");
     let threads = getText("threads", DEFAULT_VTHREADS);
     let speed = getText("speed", this.DEFAULT_SPEED);
-    let rawArgs = "";
+    // Computed values.
+    const induration = this.props.info.duration;
+    let ss;
+    let outduration;
+    let rawArgs;
 
     // Validate & transform.
     limit = validate(limit, "limitErr", (v) => {
@@ -329,18 +335,27 @@ export default React.createClass({
       if (noAudio) return 0;
       return requireRange(v, this.MIN_AUIDIO_BITRATE, this.MAX_AUIDIO_BITRATE);
     });
-    start = validate(start, "startErr", (v) => {
-      if (v === "") return v;
-      // NOTE(Kagami): We don't transform that value because it's more
+    ss = validate(start, "startErr", (v) => {
+      if (v === "") return 0;
+      // NOTE(Kagami): We don't transform "start" because it's more
       // convenient for the users to see formatted timestamp in input.
-      parseTime(v);
+      v = parseTime(v);
+      if (v >= induration) throw new Error("Too far seek");
       return v;
     });
-    duration = validate(duration, "durationErr", (v) => {
-      if (v === "") return v;
-      parseTime(v);
-      return v;
-    });
+    if (valid) {
+      outduration = validate(duration, "durationErr", (v) => {
+        if (v === "") return induration - ss;
+        v = parseTime(v);
+        if (v === 0) throw new Error("Zero duration");
+        if (useEndTime) {
+          if (ss >= v) throw new Error("Less than seek");
+          v -= ss;
+        }
+        if (v + ss > induration) throw new Error("Too far end");
+        return v;
+      });
+    }
     threads = validate(threads, "threadsErr", (v) => {
       v = requireInt(v);
       return requireRange(v, MIN_VTHREADS, MAX_VTHREADS);
@@ -349,11 +364,6 @@ export default React.createClass({
       v = requireInt(v);
       return requireRange(v, this.MIN_SPEED, this.MAX_SPEED);
     });
-    // Now it's safe to compute that values.
-    let outduration = duration === ""
-      ? this.props.info.duration
-      : parseTime(duration);
-    if (useEndTime || duration === "") outduration -= parseTime(start || 0);
 
     // Always update text fields in order to enforce filled style.
     // XXX(Kagami): We don't use value property of `TextField` because
