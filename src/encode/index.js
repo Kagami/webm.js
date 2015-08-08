@@ -49,6 +49,14 @@ function tryGet(fn, arg, def) {
   }
 }
 
+function timer() {
+  const start = new Date().getTime();
+  return function() {
+    const elapsed = (new Date().getTime() - start) / 1000;
+    return showTime(elapsed);
+  };
+}
+
 export default React.createClass({
   getInitialState: function() {
     return {};
@@ -142,7 +150,8 @@ export default React.createClass({
       return "$ ffmpeg " + opts.join(" ");
     }
 
-    const start = new Date().getTime();
+    const overallT = timer();
+    let pass2T;
     let pool = this.pool = new Pool();
     let jobs = [];
     addLog(mainKey);
@@ -153,6 +162,7 @@ export default React.createClass({
       const key = "Video " + i;
       const logThread = log.bind(null, key);
       addLog(key);
+      const pass1T = timer();
       logMain(key + " started first pass");
       const partParams1 = getPartParams(videoParams1, i, 1);
       logThread(getCmd(partParams1));
@@ -161,7 +171,8 @@ export default React.createClass({
         onLog: logThread,
         files: videoSources,
       }).then(files => {
-        logMain(key + " finished first pass");
+        logMain(key + " finished first pass (" + pass1T() + ")");
+        pass2T = timer();
         logMain(key + " started second pass");
         const partParams2 = getPartParams(videoParams2, i, 2);
         logThread(getCmd(partParams2));
@@ -172,7 +183,7 @@ export default React.createClass({
           files: videoSources.concat(files),
         });
       }).then(files => {
-        logMain(key + " finished second pass");
+        logMain(key + " finished second pass (" + pass2T() + ")");
         return files[0];
       }).catch(e => {
         e.key = key;
@@ -184,6 +195,7 @@ export default React.createClass({
       const key = "Audio";
       const logThread = log.bind(null, key);
       addLog(key);
+      const audioT = timer();
       logMain(key + " started");
       logThread(getCmd(audioParams));
       const job = pool.spawnJob({
@@ -191,7 +203,7 @@ export default React.createClass({
         onLog: logThread,
         files: [safeSource],
       }).then(files => {
-        logMain(key + " finished");
+        logMain(key + " finished (" + audioT() + ")");
         return files[0];
       }).catch(e => {
         e.key = key;
@@ -202,8 +214,10 @@ export default React.createClass({
     const muxerKey = "Muxer";
     addLog(muxerKey);
 
+    let muxerT;
     Promise.all(jobs).then(parts => {
       // TODO(Kagami): Skip this step if vthreads=1 and audio=false?
+      muxerT = timer();
       logMain("Muxer started");
       const logThread = log.bind(null, muxerKey);
       logThread(getCmd(muxerParams));
@@ -213,11 +227,10 @@ export default React.createClass({
         files: parts.concat(concatList),
       });
     }).then(files => {
-      logMain("Muxer finished");
+      logMain("Muxer finished (" + muxerT() + ")");
       const output = files[0];
-      const elapsed = (new Date().getTime() - start) / 1000;
       log(mainKey, "==================================================");
-      log(mainKey, "All is done in " + showTime(elapsed));
+      log(mainKey, "All is done in " + overallT());
       log(mainKey, "Output duration: " + showTime(outduration));
       log(mainKey, "Output file size: " + showSize(output.data.byteLength));
       log(mainKey, "Output video bitrate: " + getopt(params, "-b:v", "0"));

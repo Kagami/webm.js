@@ -165,6 +165,7 @@ export class Prober {
     while ((smatch = sre.exec(out)) !== null) {
       const [id, lang, type, codec, rest] = smatch.slice(1);
       if (!has(tracks, type)) continue;
+      // TODO(Kagami): Multiple tracks? Also, we need fps.
       if (type === "Video" && width == null) {
         const resolution = rest.match(/\b(\d+)x(\d+)\b/);
         width = +resolution[1];
