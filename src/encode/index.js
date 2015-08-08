@@ -173,7 +173,6 @@ export default React.createClass({
       const elapsed = (new Date().getTime() - start) / 1000;
       log(mainKey, "==================================================");
       log(mainKey, "All is done in " + showTime(elapsed));
-      log(mainKey, "Output file name: " + output.name);
       log(mainKey, "Output file size: " + showSize(output.data.byteLength));
       log(mainKey, "Output video bitrate: " + getopt(params, "-b:v", "0"));
       log(mainKey, "Output audio bitrate: " + getopt(params, "-b:a", "0"));

@@ -61,7 +61,7 @@ const styles = {
     borderRadius: 0,
   },
   spaceBelow: {
-    marginBottom: 5,
+    marginBottom: 10,
   },
 };
 
@@ -131,11 +131,9 @@ export default React.createClass({
   hasSubsTracks: function() {
     return !!this.props.info.subs.length;
   },
-  calcVideoBitrate: function({limit, audioBitrate}) {
-    // FIXME(Kagami): Take start/end into account.
-    const duration = this.props.info.duration;
+  calcVideoBitrate: function({limit, outduration, audioBitrate}) {
     const limitKbits = limit * 8 * 1024;
-    const vb = Math.floor(limitKbits / duration - audioBitrate);
+    const vb = Math.floor(limitKbits / outduration - audioBitrate);
     // We may raise an error here instead of fixing it.
     return vb > 0 ? vb : 1;
   },
@@ -153,11 +151,10 @@ export default React.createClass({
     maybeSet("-ss", opts.start);
     args.push("-i", safeName);
     if (opts.duration !== "") {
-      // FIXME(Kagami): Fix duration in case of `useEndTime`.
       // NOTE(Kagami): We always use `-t` in resulting command because
       // `-ss` before `-i` resets the timestamp, see:
       // <https://trac.ffmpeg.org/wiki/Seeking#Notes>.
-      args.push("-t", opts.duration);
+      args.push("-t", opts.outduration);
     }
 
     // Streams.
@@ -241,7 +238,7 @@ export default React.createClass({
     this.handleUI(change);
   },
   handleRawOpts: function(e) {
-    this.setState({rawOpts: e.target.value});
+    this.setState({rawArgs: e.target.value});
   },
   handleUI: function(preState) {
     preState = preState || {};
@@ -304,7 +301,7 @@ export default React.createClass({
     let duration = getText("duration");
     let threads = getText("threads", DEFAULT_VTHREADS);
     let speed = getText("speed", this.DEFAULT_SPEED);
-    let rawOpts = "";
+    let rawArgs = "";
 
     // Validate & transform.
     limit = validate(limit, "limitErr", (v) => {
@@ -334,6 +331,8 @@ export default React.createClass({
     });
     start = validate(start, "startErr", (v) => {
       if (v === "") return v;
+      // NOTE(Kagami): We don't transform that value because it's more
+      // convenient for the users to see formatted timestamp in input.
       parseTime(v);
       return v;
     });
@@ -350,6 +349,11 @@ export default React.createClass({
       v = requireInt(v);
       return requireRange(v, this.MIN_SPEED, this.MAX_SPEED);
     });
+    // Now it's safe to compute that values.
+    let outduration = duration === ""
+      ? this.props.info.duration
+      : parseTime(duration);
+    if (useEndTime || duration === "") outduration -= parseTime(start || 0);
 
     // Always update text fields in order to enforce filled style.
     // XXX(Kagami): We don't use value property of `TextField` because
@@ -371,16 +375,17 @@ export default React.createClass({
       mode, videoTrack, limit, quality, qmin, qmax,
       noAudio, audioTrack, audioBitrate,
       useEndTime, burnSubs, subsTrack, start, duration, threads, speed,
+      outduration,
     };
-    newState.rawOpts = rawOpts = this.makeRawArgs(newState).join(" ");
-    setText("rawOpts", rawOpts);
+    newState.rawArgs = rawArgs = this.makeRawArgs(newState).join(" ");
+    setText("rawArgs", rawArgs);
     this.setState(newState);
   },
   handleUIModeClick: function() {
     this.setState({advanced: !this.state.advanced});
   },
   handleEncodeClick: function() {
-    const params = this.state.rawOpts.trim().split(/\s+/);
+    const params = this.state.rawArgs.trim().split(/\s+/);
     this.props.onReady(params);
   },
   render: function() {
@@ -553,9 +558,9 @@ export default React.createClass({
         </ClearFix>
         <ShowHide show={this.state.advanced}>
           <TextField
-            ref="rawOpts"
+            ref="rawArgs"
             floatingLabelText="Raw ffmpeg options"
-            defaultValue={this.state.rawOpts}
+            defaultValue={this.state.rawArgs}
             multiLine
             fullWidth
             onBlur={this.handleRawOpts}
