@@ -181,7 +181,9 @@ export default React.createClass({
     // < ~40 can't play webms with subtitles track at all.
     args.push("-sn");
     if (opts.burnSubs) {
-      if (subDelay) vfilters.push("setpts=PTS+" + subDelay + "/TB");
+      // NOTE(Kagami): Apply setpts even if delay is zero to simplify
+      // `getPartParams` routine.
+      vfilters.push("setpts=PTS+" + subDelay + "/TB");
       let subtitles = "subtitles=" + safeName;
       if (opts.subsTrack != null) subtitles += ":si=" + opts.subsTrack;
       vfilters.push(subtitles);

@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import {Pool, showTime} from "../ffmpeg";
+import {Pool, parseTime, showTime} from "../ffmpeg";
 import {Paper, RaisedButton, LinearProgress} from "../theme";
 import Logger from "./logger";
 import Preview from "./preview";
@@ -41,29 +41,45 @@ const styles = {
   },
 };
 
+function tryGet(fn, arg, def) {
+  try {
+    return fn(arg);
+  } catch(e) {
+    return def;
+  }
+}
+
 export default React.createClass({
   getInitialState: function() {
     return {};
   },
   componentWillMount: function() {
-    let pool = this.pool = new Pool();
     // NOTE(Kagami): We analyze various video/audio settings and create
     // jobs based on single options line passed from the `Params`
     // component. This is a bit hackish - better to use values of UI
     // widgets, but since we also support raw FFmpeg options it's the
     // only way to detect features of the new encoding.
+    //
+    // Current policy: users may type whatever they want in `rawArgs`
+    // text field, but we don't guarantee the correct work in that case.
+    // We either fix bad values or fail to proceed.
     const params = this.props.params;
     const burnSubs = /\bsubtitles=/.test(getopt(params, "-vf", ""));
     const audio = !ahas(params, "-an");
-    let vthreads = 1; //+getopt(params, "-threads");
-    // FIXME(Kagami): Split in parts; do not spawn more threads than
-    // number of seconds in resulting video.
+    let vthreads = +getopt(params, "-threads");
     if (!Number.isInteger(vthreads) ||
         vthreads < MIN_VTHREADS ||
         vthreads > MAX_VTHREADS) {
-      // We may raise an error here instead of fixing it.
       vthreads = DEFAULT_VTHREADS;
     }
+    // TODO(Kagami): Fail on/fix bad ranges.
+    const induration = this.props.info.duration;
+    const ss = tryGet(parseTime, getopt(params, "-ss"), 0);
+    // NOTE(Kagami): We DO NOT support `-to` option in `rawArgs`.
+    const outduration = tryGet(parseTime, getopt(params, "-t"), induration);
+    // To have integral number of seconds in parts duration.
+    if (vthreads > outduration) vthreads = Math.floor(outduration);
+    const partduration = Math.floor(outduration / vthreads);
     const source = this.props.source;
     const subFont = this.props.subFont;
     const safeSource = {name: source.safeName, data: source.data, keep: true};
@@ -74,6 +90,35 @@ export default React.createClass({
     const audioParams = this.getAudioParams(commonParams);
     const muxerParams = this.getMuxerParams({audio});
     const concatList = this.getConcatList({vthreads});
+    function getPartParams(partParams, n, pass) {
+      const lastPart = n === vthreads;
+      const partss = ss + partduration * (n - 1);
+      const duration = lastPart
+        ? outduration - partduration * (vthreads - 1)
+        : partduration;
+      // Beware that emscripten doesn't accept Number in arguments!
+      partParams = fixopt(partParams, "-ss", partss + "", {insert: true});
+      // Try to omit "-t" in last part if possible to safe ourself
+      // against float rounding errors, etc.
+      if (!lastPart || ahas(partParams, "-t")) {
+        partParams = fixopt(partParams, "-t", duration + "", {append: true});
+      }
+      if (burnSubs) {
+        // TODO(Kagami): Make it work in complex cases too: comma
+        // escaping, not related to subs setpts filter, no setpts filter
+        // before vf_subtitles, etc.
+        partParams = fixopt(partParams, "-vf", vfilters => {
+          return vfilters.split(/,/).map(filter => {
+            const m = filter.match(/^setpts=PTS+(\d+(\.\d+)?)\/TB$/);
+            if (!m) return filter;
+            const subDelay = m[1] + partduration * (n - 1);
+            return "setpts=PTS+" + subDelay + "/TB";
+          }).join(",");
+        });
+      }
+      partParams = partParams.concat(pass === 1 ? "-" : n + ".webm");
+      return partParams;
+    }
 
     // Logging routines.
     let logsList = [];
@@ -98,29 +143,30 @@ export default React.createClass({
     }
 
     const start = new Date().getTime();
+    let pool = this.pool = new Pool();
     let jobs = [];
     addLog(mainKey);
     logMain("Spawning jobs:");
     logMain("  " + vthreads + " video thread(s)");
     if (audio) logMain("  1 audio thread");
-
     range(vthreads, 1).forEach(i => {
       const key = "Video " + i;
       const logThread = log.bind(null, key);
       addLog(key);
       logMain(key + " started first pass");
-      logThread(getCmd(videoParams1));
+      const partParams1 = getPartParams(videoParams1, i, 1);
+      logThread(getCmd(partParams1));
       const job = pool.spawnJob({
-        params: videoParams1,
+        params: partParams1,
         onLog: logThread,
         files: videoSources,
       }).then(files => {
         logMain(key + " finished first pass");
         logMain(key + " started second pass");
-        const namedVideoParams2 = videoParams2.concat(i + ".webm");
-        logThread(getCmd(namedVideoParams2));
+        const partParams2 = getPartParams(videoParams2, i, 2);
+        logThread(getCmd(partParams2));
         return pool.spawnJob({
-          params: namedVideoParams2,
+          params: partParams2,
           onLog: logThread,
           // Log and source for the second pass.
           files: videoSources.concat(files),
@@ -167,12 +213,12 @@ export default React.createClass({
         files: parts.concat(concatList),
       });
     }).then(files => {
-      // TODO(Kagami): Print output duration.
       logMain("Muxer finished");
       const output = files[0];
       const elapsed = (new Date().getTime() - start) / 1000;
       log(mainKey, "==================================================");
       log(mainKey, "All is done in " + showTime(elapsed));
+      log(mainKey, "Output duration: " + showTime(outduration));
       log(mainKey, "Output file size: " + showSize(output.data.byteLength));
       log(mainKey, "Output video bitrate: " + getopt(params, "-b:v", "0"));
       log(mainKey, "Output audio bitrate: " + getopt(params, "-b:a", "0"));
@@ -213,10 +259,8 @@ export default React.createClass({
   },
   getVideoParamsPass1: function(params) {
     params = params.concat("-an");
-    // NOTE(Kagami): First pass will use default `-speed` value if it's
-    // omitted in params. This may be considered as feature.
-    params = fixopt(params, "-speed", "4");
-    params = params.concat("-pass", "1", "-f", "null", "-");
+    params = fixopt(params, "-speed", "4", {append: true});
+    params = params.concat("-pass", "1", "-f", "null");
     return params;
   },
   getVideoParamsPass2: function(params) {

@@ -98,6 +98,7 @@ const Main = React.createClass({
     return this.state.params ? (
       <Encode
         source={this.state.source}
+        info={this.state.info}
         params={this.state.params}
         subFont={this.state.subFont}
         onCancel={this.handleEncodeCancel}

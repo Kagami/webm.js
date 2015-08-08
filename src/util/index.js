@@ -47,12 +47,15 @@ export function clearopt(arr, key) {
   });
 }
 
-export function fixopt(arr, key, newval) {
+export function fixopt(arr, key, newval, opts) {
+  opts = opts || {};
+  let found = false;
   let prev;
-  return arr.map(cur => {
+  arr = arr.map(cur => {
     if (prev) {
+      found = true;
       prev = false;
-      return newval;
+      return typeof newval === "function" ? newval(cur) : newval;
     } else if (cur === key) {
       prev = true;
       return cur;
@@ -60,12 +63,12 @@ export function fixopt(arr, key, newval) {
       return cur;
     }
   });
-}
-
-export function remove(arr, value) {
-  const index = arr.indexOf(value);
-  if (index !== -1) {
-    arr.splice(index, value);
+  if (!found) {
+    if (opts.insert) {
+      return [key, newval].concat(arr);
+    } else if (opts.append) {
+      return arr.concat(key, newval);
+    }
   }
   return arr;
 }

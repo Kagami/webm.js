@@ -4,7 +4,7 @@
  * @module webm/ffmpeg
  */
 
-import {assert, has, remove, pad2} from "./util";
+import {assert, has, pad2} from "./util";
 
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
@@ -145,6 +145,7 @@ export class Prober {
     const dur = out.match(/^\s+Duration:\s+([^,]+)/m);
     assert(dur, "Failed to parse duration");
     const duration = parseTime(dur[1]);
+    assert(duration, "Zero duration");
     let width, height;
 
     let video = [];
@@ -178,11 +179,16 @@ export class Prober {
       lastStream = stream;
       lastIndex = smatch.index;
     }
-    // XXX(Kagami): Text between last stream line and the end of output
-    // might contain metadata information not related to last stream.
     scanMetadata();
 
     return {duration, width, height, video, audio, subs};
+  }
+}
+
+function remove(arr, value) {
+  const index = arr.indexOf(value);
+  if (index !== -1) {
+    arr.splice(index, value);
   }
 }
 
