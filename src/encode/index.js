@@ -41,7 +41,7 @@ const styles = {
   },
 };
 
-function tryGet(fn, arg, def) {
+function tryRun(fn, arg, def) {
   try {
     return fn(arg);
   } catch(e) {
@@ -82,11 +82,11 @@ export default React.createClass({
     }
     // TODO(Kagami): Fail on/fix bad ranges.
     const induration = this.props.info.duration;
-    const ss = tryGet(parseTime, getopt(params, "-ss"), 0);
+    const ss = tryRun(parseTime, getopt(params, "-ss"), 0);
     // NOTE(Kagami): We DO NOT support `-to` option in `rawArgs`.
-    const outduration = tryGet(parseTime, getopt(params, "-t"), induration);
+    const outduration = tryRun(parseTime, getopt(params, "-t"), induration);
     // To have integral number of seconds in parts duration.
-    if (vthreads > outduration) vthreads = Math.floor(outduration);
+    if (vthreads > outduration) vthreads = Math.floor(outduration) || 1;
     const partduration = Math.floor(outduration / vthreads);
     const source = this.props.source;
     const subFont = this.props.subFont;
