@@ -1,13 +1,9 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Kagami/webm.js/master/src/index/logo.png">
+  <a href="https://kagami.github.io/webm.js/"><img src="https://raw.githubusercontent.com/Kagami/webm.js/master/src/index/logo.png"></a>
 </p>
 
 <p align="center">
   Create WebM videos in your browser. No server-side, pure JavaScript.
-</p>
-
-<p align="center">
-  <a href="https://kagami.github.io/webm.js/"><b>https://kagami.github.io/webm.js/</b></a>
 </p>
 
 <p align="center">
@@ -20,7 +16,7 @@
 
 webm.js is a simple one-page application that allows you to convert videos to WebM format right into your browser, without any plugins or server-side involved. Since WebM is part of HTML5 stack, why can't we create one without leaving the browser?
 
-webm.js is built upon FFmpeg, libvpx and libopus which were ported to JavaScript using Emscripten.
+webm.js is built upon FFmpeg, libvpx and libopus which were ported to JavaScript using Emscripten. Check demo [here](https://kagami.github.io/webm.js/).
 
 ### Is it fast?
 
