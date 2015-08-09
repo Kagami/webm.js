@@ -74,6 +74,9 @@ export default React.createClass({
            this.state.info.log :
            this.state.error ? this.state.error.log : null;
   },
+  getResInfo: function() {
+    return this.state.info.video.map(t => t.width + "x" + t.height).join(", ");
+  },
   getTracksInfo: function(type) {
     const tracks = this.state.info[type];
     let info = tracks.length + " track";
@@ -98,7 +101,7 @@ export default React.createClass({
             </tr>
             <tr>
               <td style={styles.left}>Resolution:</td>
-              <td style={styles.right}>{info.width}x{info.height}</td>
+              <td style={styles.right}>{this.getResInfo()}</td>
             </tr>
             <tr>
               <td style={styles.left}>Video:</td>

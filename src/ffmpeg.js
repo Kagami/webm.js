@@ -146,7 +146,6 @@ export class Prober {
     assert(dur, "Failed to parse duration");
     const duration = parseTime(dur[1]);
     assert(duration, "Zero duration");
-    let width, height;
 
     let video = [];
     let audio = [];
@@ -165,13 +164,14 @@ export class Prober {
     while ((smatch = sre.exec(out)) !== null) {
       const [id, lang, type, codec, rest] = smatch.slice(1);
       if (!has(tracks, type)) continue;
-      // TODO(Kagami): Multiple tracks? Also, we need fps.
-      if (type === "Video" && width == null) {
-        const resolution = rest.match(/\b(\d+)x(\d+)\b/);
-        width = +resolution[1];
-        height = +resolution[2];
-      }
       let stream = {id, lang, codec};
+      if (type === "Video") {
+        const resolution = rest.match(/\b(\d+)x(\d+)\b/);
+        stream.width = +resolution[1];
+        stream.height = +resolution[2];
+        const fpsm = rest.match(/\b(\d+(\.\d+)?)\s+fps\b/);
+        stream.fps = +fpsm[1];
+      }
       if (type === "Subtitle") stream.si = si++;
       if (rest.match(/\(default\)/)) stream.default = true;
       if (rest.match(/\(forced\)/)) stream.forced = true;
@@ -182,7 +182,7 @@ export class Prober {
     }
     scanMetadata();
 
-    return {duration, width, height, video, audio, subs};
+    return {duration, video, audio, subs};
   }
 }
 
