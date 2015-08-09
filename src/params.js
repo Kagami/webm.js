@@ -187,7 +187,7 @@ export default React.createClass({
       let subtitles = "subtitles=" + safeName;
       if (opts.subsTrack != null) subtitles += ":si=" + opts.subsTrack;
       vfilters.push(subtitles);
-      if (subDelay) vfilters.push("setpts=PTS-STARTPTS");
+      vfilters.push("setpts=PTS-STARTPTS");
     }
 
     // Filters.
