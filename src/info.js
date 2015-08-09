@@ -129,7 +129,7 @@ export default React.createClass({
     // FFmpeg, etc) as well. Though they should be uncommon.
     const errorInner = (
       <div>
-        <div style={styles.header}>unsupported video</div>
+        <div style={styles.header}>unsupported codec</div>
         <div style={styles.infoInner}>
           <span>Selected video is either corrupted or unsupported.<br/>
           If you think your video is fine, please open issue with the log

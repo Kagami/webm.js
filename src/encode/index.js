@@ -59,7 +59,7 @@ function timer() {
 
 export default React.createClass({
   getInitialState: function() {
-    return {};
+    return {progress: 0};
   },
   componentWillMount: function() {
     // NOTE(Kagami): We analyze various video/audio settings and create
@@ -324,7 +324,6 @@ export default React.createClass({
     // FIXME(Kagami): Calculate progress.
     const error = !!this.state.error;
     const done = !!this.state.output;
-    const progress = error ? 0 : (done ? 100 : 30); //tmp
     const outname = this.getOutputFilename();
     let header = "encoding " + outname + ": ";
     let url;
@@ -335,7 +334,7 @@ export default React.createClass({
       const blob = new Blob([this.state.output.data]);
       url = URL.createObjectURL(blob);
     } else {
-      header += progress + "%";
+      header += this.state.progress + "%";
     }
     return (
       <Paper>
@@ -343,7 +342,7 @@ export default React.createClass({
         <div style={styles.controls}>
           <LinearProgress
             mode="determinate"
-            value={progress}
+            value={this.state.progress}
             style={styles.progress}
           />
           <div style={styles.buttons}>
