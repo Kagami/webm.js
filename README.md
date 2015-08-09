@@ -22,7 +22,7 @@ webm.js is built upon FFmpeg, libvpx and libopus which were ported to JavaScript
 
 Well, partly. With the help of asm.js, generic code compiled by Emscripten is almost as fast as native, but JavaScript doesn't have access to advanced x86 instructions like SSE and codecs use them far and wide so we have some performance degradation here. Not that drastical though—I had numbers like 8x worse than native@corei7-avx for libvpx-vp8 and ~4 fps (single thread, SD, medium settings). Low-level multithreading is also [not available](https://github.com/kripken/emscripten/blob/master/site/source/docs/porting/pthreads.rst) in stable versions of browsers, but luckily we can hack it up by splitting video into chunks and encoding them in separate workers.
 
-To get you some concrete numbers: it takes ~5m25s to encode [sample clip](https://github.com/Kagami/webm.js/blob/master/src/source/ed.webm) (853x480, 1m9s) with default settings (2pass, `-threads 4 -c:v libvpx -b:v 885k -speed 1 -auto-alt-ref 1 -lag-in-frames 25 -c:a libopus -b:a 64k`) at i7 3820.
+To get you some concrete numbers: it takes ~5m25s to encode [sample clip](https://github.com/Kagami/webm.js/blob/master/src/source/ed.webm) (853x480, 1m9s) with default settings (2pass, `-threads 4 -c:v libvpx -b:v 885k -speed 1 -auto-alt-ref 1 -lag-in-frames 25 -c:a libopus -b:a 64k`) at i7 3820. Same encode with native FFmpeg/libvpx takes ~40s. Hopefully we will improve that performance with WebAssembly and SIMD.js, stay tuned!
 
 ### What about quality?
 
