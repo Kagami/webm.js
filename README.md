@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://kagami.github.io/webm.js/"><b>DEMO</b></a>
+  <a href="https://kagami.github.io/webm.js/"><b>https://kagami.github.io/webm.js/</b></a>
 </p>
 
 <p align="center">
