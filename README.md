@@ -44,7 +44,7 @@ inside. Host the `dist` directory with your favourite HTTP server or use `npm st
 
 webm.js own code, documentation, favicon and logo licensed under CC0, but the resulting build also includes the following libraries and assets:
 
-* FFmpeg port [ffmpeg.js](https://github.com/Kagami/ffmpeg.js) (LGPL-2.1+ and few libraries under BSD, see [full license text](https://github.com/Kagami/ffmpeg.js/blob/master/LICENSE))
+* FFmpeg port [ffmpeg.js](https://github.com/Kagami/ffmpeg.js) (LGPL-2.1+ and few libraries under BSD, see [full license text](https://github.com/Kagami/ffmpeg.js/blob/master/LICENSE.WEBM))
 * Remaining libraries in `dependencies` section of [package.json](https://github.com/Kagami/webm.js/blob/master/package.json) (BSD-like)
 * [Roboto font](https://www.google.com/fonts/specimen/Roboto) by Christian Robertson (Apache License 2.0)
 * [Liberation Sans font](https://fedorahosted.org/liberation-fonts/) (SIL Open Font License 1.1)
