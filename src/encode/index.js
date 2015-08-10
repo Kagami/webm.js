@@ -8,6 +8,7 @@ import {Pool, parseTime, showTime} from "../ffmpeg";
 import {Paper, RaisedButton, LinearProgress} from "../theme";
 import Logger from "./logger";
 import Preview from "./preview";
+import Download from "./download";
 import {
   ahas, getopt, clearopt, fixopt, range, str2ab,
   MIN_VTHREADS, MAX_VTHREADS, DEFAULT_VTHREADS,
@@ -403,14 +404,14 @@ export default React.createClass({
               label={this.getCancelLabel()}
               onClick={this.handleCancelClick}
             />
-            <a href={url} download={outname}>
-              <RaisedButton
-                style={styles.bigButton}
-                primary
-                disabled={!done}
-                label="download"
-              />
-            </a>
+            <Download
+              url={url}
+              name={outname}
+              disabled={!done}
+              primary
+              style={styles.bigButton}
+              label="download"
+            />
             <RaisedButton
               style={styles.lastBigButton}
               secondary
