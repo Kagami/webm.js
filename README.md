@@ -30,7 +30,7 @@ Currently only VP8+Opus combination is supported. Opus is better than Vorbis ([a
 
 Trying to compensate the use of outdated codec, two-pass encoding with `speed=1` and `lag-in-frames=25` is used. Splitting video in parts creates additional keyframes and therefore loses effeciency a bit, but  the difference should be negligible for the `g=128` currently used. It is also possible to specify `speed=0` or `quality=best` and other FFmpeg/libvpx options if you're trying to achieve the maximal quality.
 
-### Build
+### How to start hacking?
 
 Build your own version of webm.js is as simple as clone the repo and run
 
@@ -39,6 +39,12 @@ npm i && npm run release
 ```
 
 inside. Host the `dist` directory with your favourite HTTP server or use `npm start` to start the development server at 8080 port.
+
+### I want to use it locally and don't have node.js
+
+No problem! Just download [webm.js-gh-pages.zip](https://github.com/Kagami/webm.js/archive/gh-pages.zip), unpack it and open `index.html` with Firefox. Everything should work right away. Other browsers will require local HTTP server, run `python -mSimpleHTTPServer` in unpacked directory if in doubt.
+
+It's also perfectly possible to build browser extension, user script or even embed WebM encoder into your site. I haven't done anything in that direction yet, but let me know if you're interested.
 
 ### License
 
