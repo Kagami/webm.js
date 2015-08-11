@@ -39,13 +39,12 @@ const styles = {
     borderRadius: 0,
   },
   log: {
-    padding: "16px 24px",
     backgroundColor: "#f8f8f8",
-  },
-  logInner: {
-    margin: 0,
     maxHeight: 300,
     overflowY: "auto",
+  },
+  logInner: {
+    margin: "16px 24px",
     whiteSpace: "pre-wrap",
     wordWrap: "break-word",
   },
