@@ -36,7 +36,6 @@ const styles = {
   },
   left: {
     float: "left",
-    width: 280,
   },
   right: {
     float: "right",
@@ -62,6 +61,14 @@ const styles = {
   },
   spaceBelow: {
     marginBottom: 10,
+  },
+  tracks: {
+    width: 300,
+  },
+  track: {
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+    paddingRight: 24,
   },
 };
 
@@ -429,6 +436,8 @@ export default React.createClass({
             hintText="Select video track"
             onChange={this.handleSelect.bind(null, "videoTrack")}
             menuItems={this.getItems("video")}
+            style={styles.tracks}
+            menuItemStyle={styles.track}
           />
         </div>
         <div style={styles.right}>
@@ -492,6 +501,8 @@ export default React.createClass({
             // disabled={this.state.noAudio}
             onChange={this.handleSelect.bind(null, "audioTrack")}
             menuItems={this.getItems("audio")}
+            style={styles.tracks}
+            menuItemStyle={styles.track}
           />
         </div>
         <div style={styles.right}>
@@ -529,6 +540,8 @@ export default React.createClass({
               // disabled={!this.state.burnSubs}
               onChange={this.handleSelect.bind(null, "subsTrack")}
               menuItems={this.getItems("subs", this.state.burnSubs)}
+              style={styles.tracks}
+              menuItemStyle={styles.track}
             />
           </div>
           <div style={styles.right}>
