@@ -107,8 +107,8 @@ export default React.createClass({
         : partduration;
       // Beware that emscripten doesn't accept Number in arguments!
       partParams = fixopt(partParams, "-ss", partss + "", {insert: true});
-      // Try to omit "-t" in last part if possible to safe ourself
-      // against float rounding errors, etc.
+      // Omit "-t" in last part if possible to protect ourself against
+      // float rounding errors, etc.
       if (!lastPart || ahas(partParams, "-t")) {
         partParams = fixopt(partParams, "-t", duration + "", {append: true});
       }
@@ -118,9 +118,9 @@ export default React.createClass({
         // before vf_subtitles, etc.
         partParams = fixopt(partParams, "-vf", vfilters => {
           return vfilters.split(/,/).map(filter => {
-            const m = filter.match(/^setpts=PTS+(\d+(\.\d+)?)\/TB$/);
+            const m = filter.match(/^setpts=PTS\+(\d+(\.\d+)?)\/TB$/);
             if (!m) return filter;
-            const subDelay = m[1] + partduration * (n - 1);
+            const subDelay = Number(m[1]) + partduration * (n - 1);
             return "setpts=PTS+" + subDelay + "/TB";
           }).join(",");
         });
