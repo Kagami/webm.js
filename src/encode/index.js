@@ -375,7 +375,7 @@ export default React.createClass({
   render: function() {
     const done = !!this.state.output;
     const error = !!this.state.error;
-    const progress = done ? 100 : this.state.progress;
+    const progress = done ? 100 : error ? 0 : this.state.progress;
     const outname = this.getOutputFilename();
     let header = "encoding " + outname + ": ";
     let url;
