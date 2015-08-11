@@ -349,7 +349,7 @@ export default React.createClass({
       // NOTE(Kagami): We don't transform "start" because it's more
       // convenient for the users to see formatted timestamp in input.
       v = parseTime(v);
-      if (v >= induration) throw new Error("Too far seek");
+      if (v >= induration) throw new Error("Too far");
       return v;
     });
     if (valid) {
@@ -358,10 +358,10 @@ export default React.createClass({
         v = parseTime(v);
         if (v === 0) throw new Error("Zero duration");
         if (useEndTime) {
-          if (ss >= v) throw new Error("Less than seek");
+          if (ss >= v) throw new Error("Less than start");
           v -= ss;
         }
-        if (v + ss > induration) throw new Error("Too far end");
+        if (v + ss > induration) throw new Error("Too far");
         return v;
       });
     }
