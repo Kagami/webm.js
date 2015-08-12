@@ -234,7 +234,7 @@ export default React.createClass({
     this.handleUI(upd);
   },
   handleNoAudio: function(e, noAudio) {
-    let audioBitrate = noAudio ? 0 : this.DEFAULT_AUIDIO_BITRATE;
+    const audioBitrate = noAudio ? 0 : this.DEFAULT_AUIDIO_BITRATE;
     this.handleUI({audioBitrate});
   },
   handleEvent: function() {

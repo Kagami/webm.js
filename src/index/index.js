@@ -13,7 +13,9 @@ import "core-js/fn/promise";
 import React from "react";
 import injectTapEventPlugin from "react-tap-event-plugin";
 import {Prober} from "../ffmpeg";
-import {themeManager, Container, Center, Wait} from "../theme";
+import {
+  themeManager, Container, Center, Wait, CenterSection, InlineButton,
+} from "../theme";
 import Source from "../source";
 import Preview from "../preview";
 import Info from "../info";
@@ -50,13 +52,21 @@ const Main = React.createClass({
       return Prober.spawn();
     }).then(prober => {
       this.setState({prober});
-    }).catch(e => {
-      // FIXME(Kagami): Display error in UI.
-      console.error(e);
+    }).catch(() => {
+      this.setState({loadingError: true});
     });
   },
   getPreloadNode: function() {
-    return this.state.prober ? null : (
+    return this.state.loadingError ? (
+      <CenterSection header="loading error">
+        <span>Error occured while loading webm.js, try to </span>
+        <InlineButton
+          primary
+          label="reload the page"
+          onClick={this.handleReload}
+        />.
+      </CenterSection>
+    ) : this.state.prober ? null : (
       <Center><Wait>Please wait while webm.js is loading</Wait></Center>
     );
   },
@@ -104,6 +114,9 @@ const Main = React.createClass({
         onCancel={this.handleEncodeCancel}
       />
     ) : null;
+  },
+  handleReload: function() {
+    location.reload();
   },
   handleSourceLoad: function(source) {
     // We can't transfer source because we use it many times.

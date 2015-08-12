@@ -4,7 +4,9 @@
  */
 
 import React from "react";
-import {InlineButton, Center, Wait, secondaryColor} from "../theme";
+import {
+  InlineButton, Center, Wait, CenterSection, secondaryColor,
+} from "../theme";
 import {download} from "../util";
 
 const SAMPLE_NAME = "ed.webm";
@@ -65,19 +67,27 @@ export default React.createClass({
   },
   handleSampleClick: function(e) {
     if (e) e.stopPropagation();
-    this.setState({loadingSample: true});
+    this.setState({loadingSample: true, loadingError: false});
     download(SAMPLE_URL).then(data => {
       const name = SAMPLE_NAME;
       const blob = new Blob([data]);
       const url = URL.createObjectURL(blob);
       this.props.onLoad({name, data, url});
-    }, () => {
-      // FIXME(Kagami): Display error in UI.
-      this.setState({loadingSample: false});
+    }).catch(() => {
+      this.setState({loadingSample: false, loadingError: true});
     });
   },
   render: function() {
-    return this.state.loadingSample ? (
+    return this.state.loadingError ? (
+      <CenterSection header="loading error">
+        <span>Error occured while downloading the sample, </span>
+        <InlineButton
+          primary
+          onClick={this.handleSampleClick}
+          label="try again"
+        />.
+      </CenterSection>
+    ) : this.state.loadingSample ? (
       <Center><Wait>Loading sample</Wait></Center>
     ) : (
       <Center
