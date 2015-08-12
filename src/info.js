@@ -66,6 +66,7 @@ export default React.createClass({
       this.props.onLoad(info);
     }, (error) => {
       this.setState({error});
+      this.props.onError(error);
     });
   },
   getLogText: function() {

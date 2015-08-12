@@ -56,6 +56,7 @@ export default React.createClass({
             primary
             onClick={this.props.onClear}
             label="clear choice"
+            disabled={this.props.clearDisabled}
           />
         </div>
         {video}

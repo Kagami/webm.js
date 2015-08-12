@@ -380,7 +380,7 @@ export default React.createClass({
     let header = "encoding " + outname + ": ";
     let url;
     if (error) {
-      header = "error";
+      header = "encoding error";
     } else if (done) {
       header += "done";
       const blob = new Blob([this.state.output.data]);

@@ -78,7 +78,11 @@ const Main = React.createClass({
   getPreviewNode: function() {
     return this.state.source ? (
       <ShowHide show={!this.state.params} viaCSS>
-        <Preview source={this.state.source} onClear={this.handleSourceClear} />
+        <Preview
+          source={this.state.source}
+          onClear={this.handleSourceClear}
+          clearDisabled={!this.state.info && !this.state.infoError}
+        />
       </ShowHide>
     ) : null;
   },
@@ -89,6 +93,7 @@ const Main = React.createClass({
           prober={this.state.prober}
           source={this.state.source}
           onLoad={this.handleInfoLoad}
+          onError={this.handleInfoError}
         />
       </ShowHide>
     ) : null;
@@ -127,12 +132,13 @@ const Main = React.createClass({
     this.setState({source});
   },
   handleSourceClear: function() {
-    // FIXME(Kagami): Make sure to cancel all outgoing operations or
-    // block the clear button while they are in progress.
-    this.setState({source: null, info: null, params: null});
+    this.setState({source: null, info: null, infoError: null, params: null});
   },
   handleInfoLoad: function(info) {
     this.setState({info});
+  },
+  handleInfoError: function(infoError) {
+    this.setState({infoError});
   },
   handleParamsReady: function(params) {
     this.setState({params});
