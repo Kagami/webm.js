@@ -5,7 +5,7 @@
 
 import React from "react";
 import {showTime} from "./ffmpeg";
-import {Paper, FlatButton, Wait, secondaryColor} from "./theme";
+import {Paper, FlatButton, Wait, Section, secondaryColor} from "./theme";
 import {ShowHide} from "./util";
 
 const styles = {
@@ -19,16 +19,7 @@ const styles = {
     padding: 8,
     textAlign: "center",
   },
-  header: {
-    paddingTop: 8,
-    paddingLeft: 8,
-    color: "#e0e0e0",
-    fontWeight: 500,
-    fontSize: "18px",
-    textTransform: "uppercase",
-  },
-  infoInner: {
-    padding: "16px 24px",
+  section: {
     lineHeight: "24px",
   },
   more: {
@@ -52,6 +43,9 @@ const styles = {
     width: 100,
   },
   right: {
+    color: secondaryColor,
+  },
+  error: {
     color: secondaryColor,
   },
 };
@@ -88,36 +82,45 @@ export default React.createClass({
     }
     return info;
   },
+  getErrorInnerNode: function() {
+    const error = this.state.error;
+    return error ? (
+      <Section header="unsupported video" sectionStyle={styles.section}>
+        <span>Metadata parser failed with the following error: </span>
+        <span style={styles.error}>{error.message}</span><br />
+        <span>If you think your video is fine, please open issue with the log
+        attached at </span>
+        <a href="https://github.com/Kagami/webm.js/issues">bugtracker</a>.
+      </Section>
+    ) : null;
+  },
   getInfoInnerNode: function() {
     const info = this.state.info;
     return info ? (
-      <div>
-        <div style={styles.header}>input video info</div>
-        <div style={styles.infoInner}>
-          <table>
-            <tr>
-              <td style={styles.left}>Duration:</td>
-              <td style={styles.right}>{showTime(info.duration)}</td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Resolution:</td>
-              <td style={styles.right}>{this.getResInfo()}</td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Video:</td>
-              <td style={styles.right}>{this.getTracksInfo("video")}</td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Audio:</td>
-              <td style={styles.right}>{this.getTracksInfo("audio")}</td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Subtitles:</td>
-              <td style={styles.right}>{this.getTracksInfo("subs")}</td>
-            </tr>
-          </table>
-        </div>
-      </div>
+      <Section header="input video info" sectionStyle={styles.section}>
+        <table>
+          <tr>
+            <td style={styles.left}>Duration:</td>
+            <td style={styles.right}>{showTime(info.duration)}</td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Resolution:</td>
+            <td style={styles.right}>{this.getResInfo()}</td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Video:</td>
+            <td style={styles.right}>{this.getTracksInfo("video")}</td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Audio:</td>
+            <td style={styles.right}>{this.getTracksInfo("audio")}</td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Subtitles:</td>
+            <td style={styles.right}>{this.getTracksInfo("subs")}</td>
+          </tr>
+        </table>
+      </Section>
     ) : null;
   },
   handleMoreClick: function() {
@@ -127,24 +130,11 @@ export default React.createClass({
     const preload = (
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
     );
-    // TODO(Kagami): Require at least one video track.
-    // TODO(Kagami): Process other types of errors (Worker, emscripten,
-    // FFmpeg, etc) as well. Though they should be uncommon.
-    const errorInner = (
-      <div>
-        <div style={styles.header}>unsupported codec</div>
-        <div style={styles.infoInner}>
-          <span>Selected video is either corrupted or unsupported.<br/>
-          If you think your video is fine, please open issue with the log
-          attached at </span>
-          <a href="https://github.com/Kagami/webm.js/issues">bugtracker</a>.
-        </div>
-      </div>
-    );
     const info = (
       <div>
         <div style={styles.info}>
-          {this.state.error ? errorInner : this.getInfoInnerNode()}
+          {this.getErrorInnerNode()}
+          {this.getInfoInnerNode()}
           <FlatButton
             primary
             style={styles.more}

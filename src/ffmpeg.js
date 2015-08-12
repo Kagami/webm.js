@@ -166,11 +166,14 @@ export class Prober {
       if (!has(tracks, type)) continue;
       let stream = {id, lang, codec};
       if (type === "Video") {
-        const resolution = rest.match(/\b(\d+)x(\d+)\b/);
-        stream.width = +resolution[1];
-        stream.height = +resolution[2];
+        const resm = rest.match(/\b(\d+)x(\d+)\b/);
+        assert(resm, "Failed to parse resolution");
+        stream.width = Number(resm[1]);
+        stream.height = Number(resm[2]);
         const fpsm = rest.match(/\b(\d+(\.\d+)?)\s+fps\b/);
-        stream.fps = +fpsm[1];
+        assert(fpsm, "Failed to parse fps");
+        stream.fps = Number(fpsm[1]);
+        assert(stream.width && stream.height && stream.fps, "Bad video params");
       }
       if (type === "Subtitle") stream.si = si++;
       if (rest.match(/\(default\)/)) stream.default = true;
@@ -182,6 +185,7 @@ export class Prober {
     }
     scanMetadata();
 
+    assert(video.length, "No video tracks");
     return {duration, video, audio, subs};
   }
 }

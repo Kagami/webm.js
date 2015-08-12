@@ -131,7 +131,7 @@ export const SmallInput = React.createClass({
     return this.refs && this.refs.input.setValue(newValue);
   },
   render: function() {
-    let style = Object.assign({}, this.styles.smallInput, this.props.style);
+    const style = Object.assign({}, this.styles.smallInput, this.props.style);
     return <TextField {...this.props} style={style} ref="input" />;
   },
 });
@@ -151,10 +151,15 @@ export const Section = React.createClass({
     },
   },
   render: function() {
+    const sectionStyle = Object.assign(
+      {},
+      this.styles.section,
+      this.props.sectionStyle
+    );
     return (
       <div>
         <div style={this.styles.header}>{this.props.header}</div>
-        <div style={this.styles.section}>{this.props.children}</div>
+        <div style={sectionStyle}>{this.props.children}</div>
       </div>
     );
   },

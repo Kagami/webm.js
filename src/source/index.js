@@ -52,14 +52,14 @@ export default React.createClass({
     this.handleFile(files[0]);
   },
   handleFile: function(file) {
-    // TODO(Kagami): Show error for non-video files.
+    // NOTE(Kagami): We can check for `file.type.match(/^video/)` here
+    // but let's do the actual check with FFmpeg because browser may not
+    // recognize some obscure format.
     const name = file.name;
     const url = URL.createObjectURL(file);
     const reader = new FileReader();
-    // NOTE(Kagami): This should be reasonably fast (browser need to
-    // read file from disk into memory) for <50M files so don't bother
-    // displaying progress bar here.
-    // TODO(Kagami): Use IndexedDB for large files.
+    // TODO(Kagami): Implement WORKERFS, see
+    // <https://github.com/kripken/emscripten/issues/3641>.
     reader.readAsArrayBuffer(file);
     reader.onload = e => {
       this.props.onLoad({name, url, data: e.target.result});
