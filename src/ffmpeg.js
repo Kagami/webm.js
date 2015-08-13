@@ -208,7 +208,7 @@ export class Pool {
     let transfer = [];
     files = files.map(function({name, data, keep}) {
       if (!keep) {
-        const buffer = ArrayBuffer.isView(data) ? data.buffer : data;
+        const buffer = data instanceof ArrayBuffer ? data : data.buffer;
         transfer.push(buffer);
       }
       return {name, data};
