@@ -207,10 +207,7 @@ export class Pool {
     // Send/transfer only necessary data.
     let transfer = [];
     files = files.map(function({name, data, keep}) {
-      if (!keep) {
-        const buffer = data instanceof ArrayBuffer ? data : data.buffer;
-        transfer.push(buffer);
-      }
+      if (!keep) transfer.push(data.buffer);
       return {name, data};
     });
     let workers = this.workers;

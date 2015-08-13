@@ -148,7 +148,7 @@ export function download(url) {
     req.responseType = "arraybuffer";
     req.onload = function() {
       if (req.status >= 200 && req.status < 400) {
-        resolve(req.response);
+        resolve(new Uint8Array(req.response));
       } else {
         reject(new Error(req.status));
       }

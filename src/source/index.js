@@ -62,7 +62,8 @@ export default React.createClass({
     // <https://github.com/kripken/emscripten/issues/3641>.
     reader.readAsArrayBuffer(file);
     reader.onload = e => {
-      this.props.onLoad({name, url, data: e.target.result});
+      const data = new Uint8Array(e.target.result);
+      this.props.onLoad({name, data, url});
     };
   },
   handleSampleClick: function(e) {
