@@ -166,7 +166,7 @@ export class Prober {
       if (!has(tracks, type)) continue;
       let stream = {id, lang, codec};
       if (type === "Video") {
-        const resm = rest.match(/\b(\d+)x(\d+)\b/);
+        const resm = rest.match(/,\s+(\d+)x(\d+)[,\s]/);
         assert(resm, "Failed to parse resolution");
         stream.width = Number(resm[1]);
         stream.height = Number(resm[2]);
