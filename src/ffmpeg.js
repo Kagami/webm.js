@@ -226,6 +226,7 @@ export class Pool {
             ready = true;
             worker.postMessage({
               type: "run",
+              TOTAL_MEMORY: 83886080,
               arguments: params,
               MEMFS: files,
             }, transfer);
