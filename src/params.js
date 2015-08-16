@@ -147,7 +147,7 @@ export default React.createClass({
   makeRawArgs: function(opts) {
     let args = [];
     let vfilters = [];
-    const safeName = this.props.source.safeName;
+    const path = this.props.source.path;
     const vb = opts.mode === "limit" ? this.calcVideoBitrate(opts) : opts.limit;
     const subDelay = parseTime(opts.start || 0);
     function maybeSet(name, value) {
@@ -156,7 +156,7 @@ export default React.createClass({
 
     // Input.
     maybeSet("-ss", opts.start);
-    args.push("-i", safeName);
+    args.push("-i", path);
     if (opts.duration !== "") {
       // NOTE(Kagami): We always use `-t` in resulting command because
       // `-ss` before `-i` resets the timestamp, see:
@@ -191,7 +191,7 @@ export default React.createClass({
       // NOTE(Kagami): Apply setpts even if delay is zero to simplify
       // `getPartParams` routine.
       vfilters.push("setpts=PTS+" + subDelay + "/TB");
-      let subtitles = "subtitles=" + safeName;
+      let subtitles = "subtitles=" + path;
       if (opts.subsTrack != null) subtitles += ":si=" + opts.subsTrack;
       vfilters.push(subtitles);
       vfilters.push("setpts=PTS-STARTPTS");

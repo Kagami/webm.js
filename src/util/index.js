@@ -120,6 +120,8 @@ export const DEFAULT_VTHREADS = (function() {
   return threadNum;
 })();
 
+export const WORKERFS_DIR = "/data";
+
 /*
  * We need to fix the input name in order to avoid cluttering with
  * output (because we use constant names like "1.webm") and also to
@@ -141,14 +143,14 @@ export function getSafeFilename(name) {
   }
 }
 
-export function download(url) {
+export function download(url, type) {
   return new Promise(function(resolve, reject) {
     let req = new XMLHttpRequest();
     req.open("GET", url, true);
-    req.responseType = "arraybuffer";
+    req.responseType = type || "arraybuffer";
     req.onload = function() {
       if (req.status >= 200 && req.status < 400) {
-        resolve(new Uint8Array(req.response));
+        resolve(req.response);
       } else {
         reject(new Error(req.status));
       }

@@ -56,23 +56,16 @@ export default React.createClass({
     // but let's do the actual check with FFmpeg because browser may not
     // recognize some obscure format.
     const name = file.name;
+    const data = file;
     const url = URL.createObjectURL(file);
-    const reader = new FileReader();
-    // TODO(Kagami): Implement WORKERFS, see
-    // <https://github.com/kripken/emscripten/issues/3641>.
-    reader.readAsArrayBuffer(file);
-    reader.onload = e => {
-      const data = new Uint8Array(e.target.result);
-      this.props.onLoad({name, data, url});
-    };
+    this.props.onLoad({name, data, url});
   },
   handleSampleClick: function(e) {
     if (e) e.stopPropagation();
     this.setState({loadingSample: true, loadingError: false});
-    download(SAMPLE_URL).then(data => {
+    download(SAMPLE_URL, "blob").then(data => {
       const name = SAMPLE_NAME;
-      const blob = new Blob([data]);
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(data);
       this.props.onLoad({name, data, url});
     }).catch(() => {
       this.setState({loadingSample: false, loadingError: true});

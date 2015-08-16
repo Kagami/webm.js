@@ -4,7 +4,7 @@
  * @module webm/ffmpeg
  */
 
-import {assert, has, pad2} from "./util";
+import {assert, has, pad2, WORKERFS_DIR} from "./util";
 
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
@@ -80,10 +80,15 @@ export class Prober {
     return new Promise((resolve, reject) => {
       let log = [];
       let stderr = [];
+      const wfsMount = {
+        type: "WORKERFS",
+        opts: {blobs: [source]},
+        mountpoint: WORKERFS_DIR,
+      };
       worker.postMessage({
         type: "run",
-        arguments: ["-hide_banner", "-i", source.name],
-        MEMFS: [{name: source.name, data: source.data}],
+        arguments: ["-hide_banner", "-i", source.path],
+        mounts: [wfsMount],
       });
       worker.onmessage = e => {
         const msg = e.data || {};
@@ -203,13 +208,18 @@ export class Pool {
     this.workers = [];
   }
 
-  spawnJob({params, files, onLog}) {
+  spawnJob({params, onLog, MEMFS, WORKERFS}) {
     // Send/transfer only necessary data.
     let transfer = [];
-    files = files.map(function({name, data, keep}) {
+    MEMFS = (MEMFS || []).map(function({name, data, keep}) {
       if (!keep) transfer.push(data.buffer);
       return {name, data};
     });
+    const mounts = WORKERFS ? [{
+      type: "WORKERFS",
+      opts: {blobs: WORKERFS},
+      mountpoint: WORKERFS_DIR,
+    }] : [];
     let workers = this.workers;
     let worker = new Worker(WORKER_URL);
     workers.push(worker);
@@ -226,9 +236,9 @@ export class Pool {
             ready = true;
             worker.postMessage({
               type: "run",
-              TOTAL_MEMORY: 83886080,
               arguments: params,
-              MEMFS: files,
+              MEMFS,
+              mounts,
             }, transfer);
           } else {
             cleanup();

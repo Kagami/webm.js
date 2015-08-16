@@ -91,8 +91,6 @@ export default React.createClass({
     const partduration = Math.floor(outduration / vthreads);
     const source = this.props.source;
     const subFont = this.props.subFont;
-    const safeSource = {name: source.safeName, data: source.data, keep: true};
-    const videoSources = burnSubs ? [safeSource, subFont] : [safeSource];
     const commonParams = this.getCommonParams(params);
     const videoParams1 = this.getVideoParamsPass1(commonParams);
     const videoParams2 = this.getVideoParamsPass2(commonParams);
@@ -219,7 +217,8 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: partParams1,
         onLog: logThread,
-        files: videoSources,
+        MEMFS: [subFont],
+        WORKERFS: [source],
       }).then(files => {
         pass2T = timer();
         pass = 2;
@@ -231,8 +230,8 @@ export default React.createClass({
         return pool.spawnJob({
           params: partParams2,
           onLog: logThread,
-          // Log and source for the second pass.
-          files: videoSources.concat(files),
+          MEMFS: [subFont].concat(files),
+          WORKERFS: [source],
         });
       }).then(files => {
         logMain(key + " finished second pass (" + pass2T() + ")");
@@ -253,7 +252,7 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: audioParams,
         onLog: logThread,
-        files: [safeSource],
+        WORKERFS: [source],
       }).then(files => {
         logMain(key + " finished (" + audioT() + ")");
         updateProgress({audio: true});
@@ -277,7 +276,7 @@ export default React.createClass({
       return pool.spawnJob({
         params: muxerParams,
         onLog: logThread,
-        files: parts.concat(concatList),
+        MEMFS: parts.concat(concatList),
       });
     }).then(files => {
       logMain("Muxer finished (" + muxerT() + ")");
@@ -308,7 +307,7 @@ export default React.createClass({
    * in.webm -> in.webm.webm
    */
   getOutputFilename: function() {
-    const name = this.props.source.name;
+    const name = this.props.source.origName;
     let basename = name;
     const dotIndex = name.lastIndexOf(".");
     if (dotIndex !== -1) {

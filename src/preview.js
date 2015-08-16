@@ -45,7 +45,7 @@ export default React.createClass({
     return (
       <div style={styles.outer}>
         <div style={styles.header}>
-          <span>{this.props.source.name} was selected, </span>
+          <span>{this.props.source.origName} was selected, </span>
           <InlineButton
             primary
             onClick={this.handlePreviewClick}

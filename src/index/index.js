@@ -21,7 +21,7 @@ import Preview from "../preview";
 import Info from "../info";
 import Params from "../params";
 import Encode from "../encode";
-import {ShowHide, getSafeFilename, download} from "../util";
+import {ShowHide, WORKERFS_DIR, getSafeFilename, download} from "../util";
 // Assets.
 // TODO(Kagami): Move `name` setting to the webpack config. See
 // <https://github.com/webpack/file-loader/issues/30> for details.
@@ -124,11 +124,10 @@ const Main = React.createClass({
     location.reload();
   },
   handleSourceLoad: function(source) {
-    // We can't transfer source because we use it many times.
-    // (See `Pool.spawnJob` for details.)
-    const keep = true;
-    const safeName = getSafeFilename(source.name);
-    source = Object.assign({keep, safeName}, source);
+    const origName = source.name;
+    const name = getSafeFilename(origName);
+    const path = WORKERFS_DIR + "/" + name;
+    source = Object.assign({}, source, {name, path, origName});
     this.setState({source});
   },
   handleSourceClear: function() {
