@@ -182,9 +182,13 @@ export default React.createClass({
     args.push("-speed", opts.speed);
     args.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
 
-    // Subs.
-    // We only burn them currently because browsers don't display WebVTT
-    // subs in normal <video> elements and because all firefox versions
+    // Filters.
+    if (opts.width !== "") {
+      // We force value in second field if first is specified in UI.
+      vfilters.push("scale=" + opts.width + ":" + opts.height);
+    }
+    // We currently only burn subs because browsers don't display WebVTT
+    // subs in normal <video> elements and because all Firefox versions
     // < ~40 can't play webms with subtitles track at all.
     args.push("-sn");
     if (opts.burnSubs) {
@@ -196,8 +200,6 @@ export default React.createClass({
       vfilters.push(subtitles);
       vfilters.push("setpts=PTS-STARTPTS");
     }
-
-    // Filters.
     if (vfilters.length) {
       args.push("-vf", vfilters.join(","));
     }
@@ -300,6 +302,8 @@ export default React.createClass({
     let videoTrack = get("videoTrack", this.state.videoTrack);
     let limit = get("limit", getText("limit"));
     let quality = get("quality", getText("quality"));
+    let width = getText("width");
+    let height = getText("height");
     let qmin = getText("qmin");
     let qmax = getText("qmax");
     let noAudio = refs.noAudio.isChecked();
@@ -328,6 +332,25 @@ export default React.createClass({
       if (v === "") return v;
       v = requireInt(v);
       return requireRange(v, this.MIN_Q, this.MAX_Q);
+    });
+    width = validate(width, "widthErr", (v) => {
+      if (v === "") {
+        if (height !== "" && height !== "-1") return -1;
+        if (height === "-1") height = "";
+        return "";
+      }
+      if (v === "-1") return -1;
+      return requireInt(v);
+    });
+    height = validate(height, "heightErr", (v) => {
+      // Beware that width is already coersed to Number here.
+      if (v === "") {
+        if (width !== "" && width !== -1) return -1;
+        if (width === -1) width = "";
+        return "";
+      }
+      if (v === "-1") return -1;
+      return requireInt(v);
     });
     qmin = validate(qmin, "qminErr", (v) => {
       if (v === "") return v;
@@ -380,6 +403,8 @@ export default React.createClass({
     // <https://github.com/callemall/material-ui/issues/1040>.
     setText("limit", limit);
     setText("quality", quality);
+    setText("width", width);
+    setText("height", height);
     setText("qmin", qmin);
     setText("qmax", qmax);
     setText("audioBitrate", audioBitrate);
@@ -391,7 +416,7 @@ export default React.createClass({
 
     // Set validated and normalized values.
     let newState = {
-      mode, videoTrack, limit, quality, qmin, qmax,
+      mode, videoTrack, limit, quality, width, height, qmin, qmax,
       noAudio, audioTrack, audioBitrate,
       useEndTime, burnSubs, subsTrack, start, duration, threads, speed,
       outduration,
@@ -458,6 +483,22 @@ export default React.createClass({
               // noticeable flash.
               defaultValue={Empty}
               floatingLabelText="quality (4÷63)"
+              onBlur={this.handleEvent}
+            />
+          </ClearFix>
+          <ClearFix>
+            <SmallInput
+              ref="width"
+              errorText={this.state.widthErr}
+              defaultValue={Empty}
+              floatingLabelText="width"
+              onBlur={this.handleEvent}
+            />
+            <SmallInput
+              ref="height"
+              errorText={this.state.heightErr}
+              defaultValue={Empty}
+              floatingLabelText="height"
               onBlur={this.handleEvent}
             />
           </ClearFix>
