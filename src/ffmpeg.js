@@ -88,6 +88,7 @@ export class Prober {
       worker.postMessage({
         type: "run",
         arguments: ["-hide_banner", "-i", source.path],
+        TOTAL_MEMORY: 134217728,
         mounts: [wfsMount],
       });
       worker.onmessage = e => {
@@ -237,6 +238,7 @@ export class Pool {
             worker.postMessage({
               type: "run",
               arguments: params,
+              TOTAL_MEMORY: 268435456,
               MEMFS,
               mounts,
             }, transfer);
