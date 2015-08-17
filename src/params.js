@@ -568,14 +568,14 @@ export default React.createClass({
               ref="width"
               errorText={this.state.widthErr}
               defaultValue={Empty}
-              floatingLabelText="width"
+              floatingLabelText="width (px)"
               onBlur={this.handleEvent}
             />
             <SmallInput
               ref="height"
               errorText={this.state.heightErr}
               defaultValue={Empty}
-              floatingLabelText="height"
+              floatingLabelText="height (px)"
               onBlur={this.handleEvent}
             />
           </ClearFix>
