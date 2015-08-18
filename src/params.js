@@ -72,6 +72,7 @@ const styles = {
   },
   cropInput: {
     width: 67.5,
+    marginBottom: 10,
   },
 };
 
@@ -505,42 +506,40 @@ export default React.createClass({
             style={styles.tracks}
             menuItemStyle={styles.track}
           />
-          <ShowHide show={this.state.advanced}>
-            <ClearFix>
-              <SmallInput
-                ref="cropx"
-                errorText={this.state.cropxErr}
-                defaultValue={Empty}
-                floatingLabelText="crop x"
-                onBlur={this.handleEvent}
-                style={styles.cropInput}
-              />
-              <SmallInput
-                ref="cropy"
-                errorText={this.state.cropyErr}
-                defaultValue={Empty}
-                floatingLabelText="crop y"
-                onBlur={this.handleEvent}
-                style={styles.cropInput}
-              />
-              <SmallInput
-                ref="cropw"
-                errorText={this.state.cropwErr}
-                defaultValue={Empty}
-                floatingLabelText="crop w"
-                onBlur={this.handleEvent}
-                style={styles.cropInput}
-              />
-              <SmallInput
-                ref="croph"
-                errorText={this.state.crophErr}
-                defaultValue={Empty}
-                floatingLabelText="crop h"
-                onBlur={this.handleEvent}
-                style={styles.cropInput}
-              />
-            </ClearFix>
-          </ShowHide>
+          <ClearFix>
+            <SmallInput
+              ref="cropx"
+              errorText={this.state.cropxErr}
+              defaultValue={Empty}
+              floatingLabelText="crop x"
+              onBlur={this.handleEvent}
+              style={styles.cropInput}
+            />
+            <SmallInput
+              ref="cropy"
+              errorText={this.state.cropyErr}
+              defaultValue={Empty}
+              floatingLabelText="crop y"
+              onBlur={this.handleEvent}
+              style={styles.cropInput}
+            />
+            <SmallInput
+              ref="cropw"
+              errorText={this.state.cropwErr}
+              defaultValue={Empty}
+              floatingLabelText="crop w"
+              onBlur={this.handleEvent}
+              style={styles.cropInput}
+            />
+            <SmallInput
+              ref="croph"
+              errorText={this.state.crophErr}
+              defaultValue={Empty}
+              floatingLabelText="crop h"
+              onBlur={this.handleEvent}
+              style={styles.cropInput}
+            />
+          </ClearFix>
         </div>
         <div style={styles.right}>
           <ClearFix>
