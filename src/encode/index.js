@@ -58,6 +58,15 @@ function timer() {
   };
 }
 
+function basename(name) {
+  const dotIndex = name.lastIndexOf(".");
+  if (dotIndex !== -1) {
+    const ext = name.slice(dotIndex + 1);
+    if (ext !== "webm") name = name.slice(0, dotIndex);
+  }
+  return name;
+}
+
 export default React.createClass({
   getInitialState: function() {
     return {progress: 0};
@@ -303,19 +312,21 @@ export default React.createClass({
   },
   /**
    * Return pretty filename based on the input video name.
-   * in.mkv -> in.webm
-   * in.webm -> in.webm.webm
    */
   getOutputFilename: function() {
-    const name = this.props.source.origName;
-    let basename = name;
-    const dotIndex = name.lastIndexOf(".");
-    if (dotIndex !== -1) {
-      const ext = name.slice(dotIndex + 1);
-      if (ext !== "webm") basename = name.slice(0, dotIndex);
+    let name = basename(this.props.source.origName);
+    const params = this.props.params;
+    if (ahas(params, "-ss") || ahas(params, "-t")) {
+      const induration = this.props.info.duration;
+      const ss = tryRun(parseTime, getopt(params, "-ss"), 0);
+      const outduration = tryRun(parseTime, getopt(params, "-t"), induration);
+      name += "_";
+      name += showTime(ss);
+      name += "-";
+      name += showTime(ss + outduration);
     }
-    // TODO(Kagami): Use ss/t times in name, see webm.py.
-    return basename + ".webm";
+    name += ".webm";
+    return name;
   },
   getCommonParams: function(params) {
     params = clearopt(params, "-threads");
