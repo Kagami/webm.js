@@ -23,6 +23,9 @@ const styles = {
     fontWeight: 500,
     fontSize: "18px",
     textTransform: "uppercase",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   progress: {
     margin: "4px 0 20px 0",
