@@ -103,8 +103,8 @@ export function range(n, start) {
 }
 
 export function str2ab(str) {
-  // Probably not so fast and won't work for non-ASCII, but ok for our
-  // use case.
+  // Probably not so fast and won't work with non-ASCII, but good enough
+  // for our use case.
   return new Uint8Array(str.split("").map(ch => ch.charCodeAt(0)));
 }
 

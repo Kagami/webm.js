@@ -75,6 +75,7 @@ export default React.createClass({
     return {progress: 0};
   },
   componentWillMount: function() {
+    let pool = this.pool = new Pool();
     // NOTE(Kagami): We analyze various video/audio settings and create
     // jobs based on single options line passed from the `Params`
     // component. This is a bit hackish - better to use values of UI
@@ -205,7 +206,6 @@ export default React.createClass({
     }
 
     const overallT = timer();
-    let pool = this.pool = new Pool();
     let jobs = [];
     let pass2T;
     addLog(mainKey);

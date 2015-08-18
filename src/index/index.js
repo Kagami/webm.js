@@ -52,7 +52,8 @@ const Main = React.createClass({
       return Prober.spawn();
     }).then(prober => {
       this.setState({prober});
-    }).catch(() => {
+    }).catch(e => {
+      if (window.console) console.error(e);
       this.setState({loadingError: true});
     });
   },

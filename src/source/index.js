@@ -67,7 +67,8 @@ export default React.createClass({
       const name = SAMPLE_NAME;
       const url = URL.createObjectURL(data);
       this.props.onLoad({name, data, url});
-    }).catch(() => {
+    }).catch(err => {
+      if (window.console) console.error(err);
       this.setState({loadingSample: false, loadingError: true});
     });
   },
