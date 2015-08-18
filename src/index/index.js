@@ -47,7 +47,7 @@ const Main = React.createClass({
   },
   componentDidMount: function() {
     download(SUB_FONT_URL).then(data => {
-      const subFont = {name: SUB_FONT_NAME, keep: true, data};
+      const subFont = {name: SUB_FONT_NAME, data};
       this.setState({subFont});
       return Prober.spawn();
     }).then(prober => {

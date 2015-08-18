@@ -143,11 +143,11 @@ export function getSafeFilename(name) {
   }
 }
 
-export function download(url, type) {
+export function download(url) {
   return new Promise(function(resolve, reject) {
     let req = new XMLHttpRequest();
     req.open("GET", url, true);
-    req.responseType = type || "arraybuffer";
+    req.responseType = "blob";
     req.onload = function() {
       if (req.status >= 200 && req.status < 400) {
         resolve(req.response);

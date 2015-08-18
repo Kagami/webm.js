@@ -229,8 +229,7 @@ export default React.createClass({
       const job = pool.spawnJob({
         params: partParams1,
         onLog: logThread,
-        MEMFS: [subFont],
-        WORKERFS: [source],
+        WORKERFS: [subFont, source],
       }).then(files => {
         pass2T = timer();
         pass = 2;
@@ -242,8 +241,8 @@ export default React.createClass({
         return pool.spawnJob({
           params: partParams2,
           onLog: logThread,
-          MEMFS: [subFont].concat(files),
-          WORKERFS: [source],
+          MEMFS: files,
+          WORKERFS: [subFont, source],
         });
       }).then(files => {
         logMain(key + " finished second pass (" + pass2T() + ")");

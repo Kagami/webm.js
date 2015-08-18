@@ -63,7 +63,7 @@ export default React.createClass({
   handleSampleClick: function(e) {
     if (e) e.stopPropagation();
     this.setState({loadingSample: true, loadingError: false});
-    download(SAMPLE_URL, "blob").then(data => {
+    download(SAMPLE_URL).then(data => {
       const name = SAMPLE_NAME;
       const url = URL.createObjectURL(data);
       this.props.onLoad({name, data, url});
