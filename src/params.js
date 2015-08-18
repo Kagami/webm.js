@@ -261,7 +261,7 @@ export default React.createClass({
     change[name] = payload.payload;
     this.handleUI(change);
   },
-  handleRawOpts: function(e) {
+  handleRawArgs: function(e) {
     this.setState({rawArgs: e.target.value});
   },
   // FIXME(Kagami): Someone, please refactor this shit in React-way.
@@ -702,10 +702,10 @@ export default React.createClass({
           <TextField
             ref="rawArgs"
             floatingLabelText="Raw ffmpeg options"
-            defaultValue={this.state.rawArgs}
+            defaultValue={this.state.rawArgs || Empty}
             multiLine
             fullWidth
-            onBlur={this.handleRawOpts}
+            onBlur={this.handleRawArgs}
             style={styles.spaceBelow}
           />
         </ShowHide>
