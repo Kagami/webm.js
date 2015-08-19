@@ -7,7 +7,11 @@ import React from "react";
 import {Paper, Tabs, Tab} from "../theme";
 
 const Output = React.createClass({
+  shouldComponentUpdate: function(nextProps) {
+    return nextProps.contents !== this.props.contents;
+  },
   componentDidUpdate: function() {
+    if (!this.props.scroll) return;
     const node = this.getDOMNode();
     node.scrollTop = node.scrollHeight;
   },
@@ -41,7 +45,7 @@ export default React.createClass({
   render: function() {
     const tabs = (this.props.logs || []).map(log =>
       <Tab style={this.styles.tab} label={log.key} key={log.key}>
-        <Output contents={log.contents} />
+        <Output contents={log.contents} scroll={this.props.scroll} />
       </Tab>
     );
     return (

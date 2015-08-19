@@ -5,7 +5,7 @@
 
 import React from "react";
 import {Pool, parseTime, showTime} from "../ffmpeg";
-import {Paper, RaisedButton, LinearProgress} from "../theme";
+import {Paper, RaisedButton, LinearProgress, Checkbox} from "../theme";
 import Logger from "./logger";
 import Preview from "./preview";
 import Download from "./download";
@@ -43,6 +43,9 @@ const styles = {
   lastBigButton: {
     width: 298,
   },
+  scrollMode: {
+    marginBottom: 10,
+  },
 };
 
 function tryRun(fn, arg, def) {
@@ -72,7 +75,7 @@ function basename(name) {
 
 export default React.createClass({
   getInitialState: function() {
-    return {progress: 0};
+    return {progress: 0, scrollOnOutput: true};
   },
   componentWillMount: function() {
     let pool = this.pool = new Pool();
@@ -384,6 +387,9 @@ export default React.createClass({
   handlePreviewClick: function() {
     this.refs.preview.show();
   },
+  handleScrollMode: function() {
+    this.setState({scrollOnOutput: !this.state.scrollOnOutput});
+  },
   render: function() {
     const done = !!this.state.output;
     const error = !!this.state.error;
@@ -433,7 +439,13 @@ export default React.createClass({
             />
             <Preview ref="preview" url={url} />
           </div>
-          <Logger logs={this.state.logs} />
+          <Checkbox
+            defaultChecked={this.state.scrollOnOutput}
+            label="Scroll on output"
+            onCheck={this.handleScrollMode}
+            style={styles.scrollMode}
+          />
+          <Logger logs={this.state.logs} scroll={this.state.scrollOnOutput} />
         </div>
       </Paper>
     );
