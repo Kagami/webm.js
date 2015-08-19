@@ -41,11 +41,23 @@ export default React.createClass({
       borderBottom: "1px solid #e0e0e0",
       borderRight: "1px solid #e0e0e0",
     },
+    tabDone: {
+      color: "#999",
+    },
+  },
+  getTabStyle: function(logItem) {
+    let style = Object.assign({}, this.styles.tab);
+    if (logItem.done) Object.assign(style, this.styles.tabDone);
+    return style;
   },
   render: function() {
-    const tabs = (this.props.logs || []).map(log =>
-      <Tab style={this.styles.tab} label={log.key} key={log.key}>
-        <Output contents={log.contents} scroll={this.props.scroll} />
+    const tabs = (this.props.logs || []).map(logItem =>
+      <Tab
+        style={this.getTabStyle(logItem)}
+        label={logItem.key}
+        key={logItem.key}
+      >
+        <Output contents={logItem.contents} scroll={this.props.scroll} />
       </Tab>
     );
     return (

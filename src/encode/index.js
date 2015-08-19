@@ -193,6 +193,7 @@ export default React.createClass({
       const item = {key, contents: ""};
       logsList.push(item);
       logsHash[key] = item;
+      return item;
     }
     // TODO(Kagami): Truncate large logs?
     // TODO(Kagami): Colorize logs with hljs or manually?
@@ -211,14 +212,14 @@ export default React.createClass({
     const overallT = timer();
     let jobs = [];
     let pass2T;
-    addLog(mainKey);
+    let mainLogItem = addLog(mainKey);
     logMain("Spawning jobs:");
     logMain("  " + vthreads + " video thread(s)");
     if (audio) logMain("  1 audio thread");
     range(vthreads, 1).forEach(i => {
       const pass1T = timer();
       const key = "Video " + i;
-      addLog(key);
+      let logItem = addLog(key);
       let pass = 1;
       let frameParser = createFrameParser();
       function logThread(line) {
@@ -248,6 +249,7 @@ export default React.createClass({
           WORKERFS: [subFont, source],
         });
       }).then(files => {
+        logItem.done = true;
         logMain(key + " finished second pass (" + pass2T() + ")");
         return files[0];
       }).catch(e => {
@@ -257,10 +259,10 @@ export default React.createClass({
       jobs.push(job);
     });
     if (audio) {
+      const audioT = timer();
       const key = "Audio";
       const logThread = log.bind(null, key);
-      addLog(key);
-      const audioT = timer();
+      let logItem = addLog(key);
       logMain(key + " started");
       logThread(getCmd(audioParams));
       const job = pool.spawnJob({
@@ -268,6 +270,7 @@ export default React.createClass({
         onLog: logThread,
         WORKERFS: [source],
       }).then(files => {
+        logItem.done = true;
         logMain(key + " finished (" + audioT() + ")");
         updateProgress({audio: true});
         return files[0];
@@ -278,9 +281,9 @@ export default React.createClass({
       jobs.push(job);
     }
     const muxerKey = "Muxer";
-    addLog(muxerKey);
-
+    let muxerLogItem = addLog(muxerKey);
     let muxerT;
+
     Promise.all(jobs).then(parts => {
       // TODO(Kagami): Skip this step if vthreads=1 and audio=false?
       muxerT = timer();
@@ -293,6 +296,8 @@ export default React.createClass({
         MEMFS: parts.concat(concatList),
       });
     }).then(files => {
+      muxerLogItem.done = true;
+      mainLogItem.done = true;
       logMain("Muxer finished (" + muxerT() + ")");
       const output = files[0];
       log(mainKey, "==================================================");
