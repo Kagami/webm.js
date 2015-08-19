@@ -28,7 +28,7 @@ export default React.createClass({
     seek: {
       display: "inline-block",
       margin: 0,
-      width: 720,
+      width: 770,
       height: 16,
     },
   },
@@ -38,15 +38,24 @@ export default React.createClass({
       <div style={this.styles.root}>
         <div style={this.styles.view} />
         <div style={this.styles.controls}>
-          <FlatButton style={this.styles.control} label="▶" primary />
-          <FlatButton style={this.styles.control} label="◄" />
-          <FlatButton style={this.styles.control} label="►" />
+          <FlatButton
+            style={this.styles.control}
+            label="◄"
+            title="Previous frame"
+            disabled
+            />
+          <FlatButton
+            style={this.styles.control}
+            label="►"
+            title="Next frame"
+          />
           <div style={this.styles.seekOuter}>
             <Slider style={this.styles.seek} name="seek" />
           </div>
           <FlatButton
             primary
             label="⏏"
+            title="Back"
             style={this.styles.control}
             onClick={this.props.onClear}
           />
