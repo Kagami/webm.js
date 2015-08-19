@@ -214,7 +214,9 @@ export default React.createClass({
     let pass2T;
     let mainLogItem = addLog(mainKey);
     logMain("Spawning jobs:");
-    logMain("  " + vthreads + " video thread(s)");
+    let vjobInfo = "  " + vthreads + " video thread";
+    if (vthreads !== 1) vjobInfo += "s";
+    logMain(vjobInfo);
     if (audio) logMain("  1 audio thread");
     range(vthreads, 1).forEach(i => {
       const pass1T = timer();
