@@ -7,7 +7,6 @@
 import "core-js/fn/object/assign";
 import "core-js/fn/number/is-finite";
 import "core-js/fn/number/is-integer";
-import "core-js/fn/number/max-safe-integer";
 import "core-js/fn/promise";
 // Modules.
 import React from "react";

@@ -14,7 +14,6 @@ const WORKER_URL = require(
 // Taken from webm.py
 export function parseTime(time) {
   if (Number.isFinite(time)) return time;
-  if (time === "N/A") return Number.MAX_SAFE_INTEGER;
   // [hh]:[mm]:[ss[.xxx]]
   const m = time.match(/^(?:(\d+):)?(?:(\d+)+:)?(\d+(?:\.\d+)?)$/);
   assert(m, "Invalid time");
