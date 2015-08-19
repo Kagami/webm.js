@@ -33,9 +33,10 @@ export function parseTime(time) {
 }
 
 // Taken from webm.py
-export function showTime(duration) {
-  let ts = pad2(duration / 3600) + ":";
-  ts += pad2(duration % 3600 / 60) + ":";
+export function showTime(duration, sep) {
+  sep = sep || ":";
+  let ts = pad2(duration / 3600) + sep;
+  ts += pad2(duration % 3600 / 60) + sep;
   ts += pad2(duration % 60);
   const frac = duration % 1;
   if (frac >= 0.1) {

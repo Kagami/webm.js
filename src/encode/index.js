@@ -333,9 +333,9 @@ export default React.createClass({
       const ss = tryRun(parseTime, getopt(params, "-ss"), 0);
       const outduration = tryRun(parseTime, getopt(params, "-t"), induration);
       name += "_";
-      name += showTime(ss);
+      name += showTime(ss, ".");
       name += "-";
-      name += showTime(ss + outduration);
+      name += showTime(ss + outduration, ".");
     }
     name += ".webm";
     return name;
