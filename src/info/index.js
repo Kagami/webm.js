@@ -1,12 +1,15 @@
 /**
- * Gather the file info using ffmpeg.
+ * Analyze and inspect input file.
  * @module webm/info
  */
 
 import React from "react";
-import {showTime} from "./ffmpeg";
-import {Paper, FlatButton, Wait, Section, secondaryColor} from "./theme";
-import {ShowHide} from "./util";
+import {showTime} from "../ffmpeg";
+import {
+  Paper, FlatButton, Wait, Section, ClearFix, secondaryColor,
+} from "../theme";
+import View from "./view";
+import {ShowHide} from "../util";
 
 const styles = {
   root: {
@@ -39,11 +42,21 @@ const styles = {
     whiteSpace: "pre-wrap",
     wordWrap: "break-word",
   },
+  infoLeft: {
+    float: "left",
+  },
+  infoRight: {
+    float: "right",
+    width: 420,
+  },
   left: {
     width: 100,
   },
   right: {
     color: secondaryColor,
+    maxWidth: 350,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   error: {
     color: secondaryColor,
@@ -95,31 +108,40 @@ export default React.createClass({
     ) : null;
   },
   getInfoInnerNode: function() {
+    const source = this.props.source;
     const info = this.state.info;
     return info ? (
       <Section header="input video info" sectionStyle={styles.section}>
-        <table>
-          <tr>
-            <td style={styles.left}>Duration:</td>
-            <td style={styles.right}>{showTime(info.duration)}</td>
-          </tr>
-          <tr>
-            <td style={styles.left}>Resolution:</td>
-            <td style={styles.right}>{this.getResInfo()}</td>
-          </tr>
-          <tr>
-            <td style={styles.left}>Video:</td>
-            <td style={styles.right}>{this.getTracksInfo("video")}</td>
-          </tr>
-          <tr>
-            <td style={styles.left}>Audio:</td>
-            <td style={styles.right}>{this.getTracksInfo("audio")}</td>
-          </tr>
-          <tr>
-            <td style={styles.left}>Subtitles:</td>
-            <td style={styles.right}>{this.getTracksInfo("subs")}</td>
-          </tr>
-        </table>
+        <ClearFix>
+          <table style={styles.infoLeft}>
+            <tr>
+              <td style={styles.left}>Name:</td>
+              <td style={styles.right}>{source.origName}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Duration:</td>
+              <td style={styles.right}>{showTime(info.duration)}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Resolution:</td>
+              <td style={styles.right}>{this.getResInfo()}</td>
+            </tr>
+          </table>
+          <table style={styles.infoRight}>
+            <tr>
+              <td style={styles.left}>Video:</td>
+              <td style={styles.right}>{this.getTracksInfo("video")}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Audio:</td>
+              <td style={styles.right}>{this.getTracksInfo("audio")}</td>
+            </tr>
+            <tr>
+              <td style={styles.left}>Subtitles:</td>
+              <td style={styles.right}>{this.getTracksInfo("subs")}</td>
+            </tr>
+          </table>
+        </ClearFix>
       </Section>
     ) : null;
   },
@@ -129,6 +151,9 @@ export default React.createClass({
   render: function() {
     const preload = (
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
+    );
+    const view = (
+      <View info={this.state.info} onClear={this.props.onClear} />
     );
     const info = (
       <div>
@@ -151,6 +176,7 @@ export default React.createClass({
     );
     return (
       <Paper style={styles.root}>
+        {this.state.info ? view : null}
         {this.state.info || this.state.error ? info : preload}
       </Paper>
     );

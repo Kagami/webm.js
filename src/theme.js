@@ -22,6 +22,7 @@ export {default as RadioButtonGroup} from "material-ui/lib/radio-button-group";
 export {default as RadioButton} from "material-ui/lib/radio-button";
 export {default as Checkbox} from "material-ui/lib/checkbox";
 export {default as SelectField} from "material-ui/lib/select-field";
+export {default as Slider} from "material-ui/lib/slider";
 
 export const themeManager = new ThemeManager();
 

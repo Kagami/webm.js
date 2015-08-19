@@ -39,7 +39,7 @@ const styles = {
   },
   right: {
     float: "right",
-    width: 380,
+    width: 420,
     marginTop: -30,
   },
   smallSelect: {

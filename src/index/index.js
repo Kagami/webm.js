@@ -16,7 +16,6 @@ import {
   themeManager, Container, Center, Wait, CenterSection, InlineButton,
 } from "../theme";
 import Source from "../source";
-import Preview from "../preview";
 import Info from "../info";
 import Params from "../params";
 import Encode from "../encode";
@@ -75,17 +74,6 @@ const Main = React.createClass({
       <Source onLoad={this.handleSourceLoad} />
     ) : null;
   },
-  getPreviewNode: function() {
-    return this.state.source ? (
-      <ShowHide show={!this.state.params} viaCSS>
-        <Preview
-          source={this.state.source}
-          onClear={this.handleSourceClear}
-          clearDisabled={!this.state.info && !this.state.infoError}
-        />
-      </ShowHide>
-    ) : null;
-  },
   getInfoNode: function() {
     return this.state.source ? (
       <ShowHide show={!this.state.params} viaCSS>
@@ -93,7 +81,7 @@ const Main = React.createClass({
           prober={this.state.prober}
           source={this.state.source}
           onLoad={this.handleInfoLoad}
-          onError={this.handleInfoError}
+          onClear={this.handleSourceClear}
         />
       </ShowHide>
     ) : null;
@@ -131,13 +119,10 @@ const Main = React.createClass({
     this.setState({source});
   },
   handleSourceClear: function() {
-    this.setState({source: null, info: null, infoError: null, params: null});
+    this.setState({source: null, info: null, params: null});
   },
   handleInfoLoad: function(info) {
     this.setState({info});
-  },
-  handleInfoError: function(infoError) {
-    this.setState({infoError});
   },
   handleParamsReady: function(params) {
     this.setState({params});
@@ -150,7 +135,6 @@ const Main = React.createClass({
       <Container>
         {this.getPreloadNode()}
         {this.getSourceNode()}
-        {this.getPreviewNode()}
         {this.getInfoNode()}
         {this.getParamsNode()}
         {this.getEncodeNode()}
