@@ -6,7 +6,8 @@
 import React from "react";
 import {showTime} from "../ffmpeg";
 import {
-  Paper, FlatButton, Wait, Section, ClearFix, secondaryColor,
+  Paper, FlatButton, InlineButton, Wait, Section,
+  ClearFix, secondaryColor,
 } from "../theme";
 import View from "./view";
 import {ShowHide} from "../util";
@@ -73,7 +74,6 @@ export default React.createClass({
       this.props.onLoad(info);
     }, (error) => {
       this.setState({error});
-      this.props.onError(error);
     });
   },
   getLogText: function() {
@@ -104,6 +104,8 @@ export default React.createClass({
         <span>If you think your video is fine, please open issue with the log
         attached at </span>
         <a href="https://github.com/Kagami/webm.js/issues">bugtracker</a>.
+        <span> Or go </span>
+        <InlineButton primary label="back" onClick={this.props.onClear} />.
       </Section>
     ) : null;
   },
