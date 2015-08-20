@@ -30,6 +30,7 @@ export const themeManager = new ThemeManager();
 // 16:9, reasonably large and 960px is popular grid width.
 export const boxWidth = 960;
 export const boxHeight = 540;
+export const boxAspect = boxWidth / boxHeight;
 export const secondaryColor = "#999";
 
 /** Common containing element. */

@@ -68,7 +68,7 @@ export default React.createClass({
     return {};
   },
   componentDidMount: function() {
-    this.props.prober.run(this.props.source).then(info => {
+    this.props.prober.analyze(this.props.source).then(info => {
       this.setState({info});
       this.props.onLoad(info);
     }, (error) => {
@@ -153,7 +153,12 @@ export default React.createClass({
       <div style={styles.preload}><Wait>Gathering file info</Wait></div>
     );
     const view = (
-      <View info={this.state.info} onClear={this.props.onClear} />
+      <View
+        prober={this.props.prober}
+        source={this.props.source}
+        info={this.state.info}
+        onClear={this.props.onClear}
+      />
     );
     const info = (
       <div>

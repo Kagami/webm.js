@@ -11,6 +11,9 @@ const WORKER_URL = require(
   "ffmpeg.js/ffmpeg-worker-webm"
 );
 
+const DECODE_MEMORY = 134217728;
+const ENCODE_MEMORY = 268435456;
+
 // Taken from webm.py
 export function parseTime(time) {
   if (Number.isFinite(time)) return time;
@@ -71,7 +74,7 @@ export class Prober {
     this.worker = worker;
   }
 
-  run(source) {
+  analyze(source) {
     let worker = this.worker;
     function cleanup() {
       delete worker.onmessage;
@@ -88,7 +91,7 @@ export class Prober {
       worker.postMessage({
         type: "run",
         arguments: ["-hide_banner", "-i", source.path],
-        TOTAL_MEMORY: 134217728,
+        TOTAL_MEMORY: DECODE_MEMORY,
         mounts: [wfsMount],
       });
       worker.onmessage = e => {
@@ -128,6 +131,56 @@ export class Prober {
         // TODO(Kagami): Though it may be rather cheap and safer to
         // respawn it each time? We need to measure the overhead and
         // also the memory consumption.
+        cleanup();
+        reject(e);
+      };
+    });
+  }
+
+  decode(source, time) {
+    let worker = this.worker;
+    function cleanup() {
+      delete worker.onmessage;
+      delete worker.onerror;
+    }
+    return new Promise((resolve, reject) => {
+      const wfsMount = {
+        type: "WORKERFS",
+        opts: {blobs: [source]},
+        mountpoint: WORKERFS_DIR,
+      };
+      // TODO(Kagami): Use selected video track, burn subs?
+      worker.postMessage({
+        type: "run",
+        arguments: [
+          "-ss", time + "", "-i", source.path,
+          "-map", "0:v:0", "-frames:v", "1",
+          "-loglevel", "fatal",
+          "frame.jpg",
+        ],
+        TOTAL_MEMORY: DECODE_MEMORY,
+        mounts: [wfsMount],
+      });
+      worker.onmessage = e => {
+        const msg = e.data || {};
+        switch (msg.type) {
+        case "error":
+          cleanup();
+          reject(new Error(msg.data));
+          break;
+        case "exit":
+          if (msg.data !== 0) {
+            cleanup();
+            reject(new Error("Process exited with " + msg.data));
+          }
+          break;
+        case "done":
+          cleanup();
+          resolve(msg.data.MEMFS[0]);
+          break;
+        }
+      };
+      worker.onerror = e => {
         cleanup();
         reject(e);
       };
@@ -238,7 +291,7 @@ export class Pool {
             worker.postMessage({
               type: "run",
               arguments: params,
-              TOTAL_MEMORY: 268435456,
+              TOTAL_MEMORY: ENCODE_MEMORY,
               MEMFS,
               mounts,
             }, transfer);
