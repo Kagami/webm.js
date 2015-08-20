@@ -33,9 +33,10 @@ export default React.createClass({
       verticalAlign: "middle",
     },
     controls: {
-      padding: 5,
+      padding: "5px 0 5px 5px",
     },
     control: {
+      marginRight: 5,
       minWidth: 50,
     },
     seekOuter: {
@@ -45,7 +46,7 @@ export default React.createClass({
     seek: {
       display: "inline-block",
       margin: 0,
-      width: 770,
+      width: 760,
       height: 16,
     },
   },
