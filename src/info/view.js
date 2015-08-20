@@ -8,10 +8,10 @@ import {FlatButton, Slider, boxHeight, boxAspect} from "../theme";
 
 export default React.createClass({
   getInitialState: function() {
-    return {};
+    return {seek: 0};
   },
   componentDidMount: function() {
-    this.decodeFrame();
+    this.decodeFrame(this.state.seek);
   },
   styles: {
     root: {
@@ -51,8 +51,7 @@ export default React.createClass({
   },
   getFrameStyle: function() {
     let style = Object.assign({}, this.styles.frame);
-    // Use only first video track for now.
-    const track = this.props.info.video[0];
+    const track = this.getTrack();
     const videoAspect = track.width / track.height;
     if (videoAspect > boxAspect) {
       style.width = "100%";
@@ -61,14 +60,64 @@ export default React.createClass({
     }
     return style;
   },
-  decodeFrame: function() {
+  getTrack: function() {
+    // Use only first video track for now.
+    return this.props.info.video[0];
+  },
+  getStep: function() {
+    return 1 / this.getTrack().fps;
+  },
+  getLastPTS: function() {
+    const induration = this.props.info.duration;
+    return induration - this.getStep();
+  },
+  isPrevDisabled: function() {
+    return (
+      this.state.seek <= 0 ||
+      this.state.decodingFrame
+    );
+  },
+  isNextDisabled: function() {
+    return (
+      this.state.seek >= this.getLastPTS() ||
+      this.state.decodingFrame
+    );
+  },
+  decodeFrame: function(seek) {
     // FIXME(Kagami): Prefetching?
-    // TODO(Kagami): Handle frame decode errors.
-    this.props.prober.decode(this.props.source, 2).then(frame => {
+    this.setState({decodingFrame: true});
+    this.props.prober.decode(this.props.source, seek).then(frame => {
       const blob = new Blob([frame.data]);
       const frameUrl = URL.createObjectURL(blob);
-      this.setState({frameUrl});
+      this.setState({frameUrl, decodingFrame: false});
+    }).catch(e => {
+      this.setState({decodingFrame: false});
+      if (window.console) console.error(e);
     });
+  },
+  handlePrevClick: function() {
+    let seek = this.state.seek - this.getStep();
+    // Fix FP inaccuracy.
+    if (seek < 0.001) seek = 0;
+    this.setState({seek});
+    this.decodeFrame(seek);
+  },
+  handleNextClick: function() {
+    const seek = Math.min(this.state.seek + this.getStep(), this.getLastPTS());
+    this.setState({seek});
+    this.decodeFrame(seek);
+  },
+  handleSeekChange: function(e, seek) {
+    this.setState({seek});
+    if (this.state.draggingSeek) return;
+    this.decodeFrame(seek);
+  },
+  handleSeekDragStart: function() {
+    this.setState({draggingSeek: true});
+  },
+  handleSeekDragStop: function() {
+    this.setState({draggingSeek: false});
+    this.decodeFrame(this.state.seek);
   },
   render: function() {
     // TODO(Kagami): Use icons.
@@ -83,15 +132,28 @@ export default React.createClass({
             style={this.styles.control}
             label="◄"
             title="Previous frame"
-            disabled
+            onClick={this.handlePrevClick}
+            disabled={this.isPrevDisabled()}
             />
           <FlatButton
             style={this.styles.control}
             label="►"
             title="Next frame"
+            onClick={this.handleNextClick}
+            disabled={this.isNextDisabled()}
           />
           <div style={this.styles.seekOuter}>
-            <Slider style={this.styles.seek} name="seek" />
+            <Slider
+              ref="seek"
+              name="seek"
+              value={this.state.seek}
+              step={this.getStep()}
+              max={this.getLastPTS()}
+              style={this.styles.seek}
+              onChange={this.handleSeekChange}
+              onDragStart={this.handleSeekDragStart}
+              onDragStop={this.handleSeekDragStop}
+            />
           </div>
           <FlatButton
             primary
@@ -99,6 +161,7 @@ export default React.createClass({
             title="Back"
             style={this.styles.control}
             onClick={this.props.onClear}
+            disabled={this.state.decodingFrame}
           />
         </div>
       </div>
