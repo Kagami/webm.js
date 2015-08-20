@@ -177,7 +177,12 @@ export class Prober {
           break;
         case "done":
           cleanup();
-          resolve(msg.data.MEMFS[0]);
+          const files = msg.data.MEMFS;
+          if (files.length) {
+            resolve(files[0]);
+          } else {
+            reject(new Error("No output"));
+          }
           break;
         }
       };
