@@ -158,6 +158,7 @@ export default React.createClass({
         source={this.props.source}
         info={this.state.info}
         onClear={this.props.onClear}
+        onParams={this.props.onParams}
       />
     );
     const info = (

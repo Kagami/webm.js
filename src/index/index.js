@@ -82,6 +82,7 @@ const Main = React.createClass({
           source={this.state.source}
           onLoad={this.handleInfoLoad}
           onClear={this.handleSourceClear}
+          onParams={this.handleParamsChange}
         />
       </ShowHide>
     ) : null;
@@ -90,6 +91,7 @@ const Main = React.createClass({
     return this.state.info ? (
       <ShowHide show={!this.state.params} viaCSS>
         <Params
+          ref="params"
           source={this.state.source}
           info={this.state.info}
           onReady={this.handleParamsReady}
@@ -120,6 +122,9 @@ const Main = React.createClass({
   },
   handleSourceClear: function() {
     this.setState({source: null, info: null, params: null});
+  },
+  handleParamsChange: function(opts) {
+    this.refs.params.handleUI(opts);
   },
   handleInfoLoad: function(info) {
     this.setState({info});

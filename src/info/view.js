@@ -46,7 +46,7 @@ export default React.createClass({
     seek: {
       display: "inline-block",
       margin: 0,
-      width: 760,
+      width: 650,
       height: 16,
     },
   },
@@ -120,6 +120,12 @@ export default React.createClass({
     this.setState({draggingSeek: false});
     this.decodeFrame(this.state.seek);
   },
+  handleCutStartClick: function() {
+    this.props.onParams({start: this.state.seek});
+  },
+  handleCutEndClick: function() {
+    this.props.onParams({duration: this.state.seek, useEndTime: true});
+  },
   render: function() {
     // TODO(Kagami): Use icons.
     return (
@@ -143,6 +149,20 @@ export default React.createClass({
             onClick={this.handleNextClick}
             disabled={this.isNextDisabled()}
           />
+          <FlatButton
+            primary
+            style={this.styles.control}
+            label="⧏"
+            title="Mark start"
+            onClick={this.handleCutStartClick}
+            />
+          <FlatButton
+            primary
+            style={this.styles.control}
+            label="⧐"
+            title="Mark end"
+            onClick={this.handleCutEndClick}
+            />
           <div style={this.styles.seekOuter}>
             <Slider
               ref="seek"

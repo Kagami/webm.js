@@ -326,11 +326,11 @@ export default React.createClass({
     let noAudio = refs.noAudio.isChecked();
     let audioTrack = get("audioTrack", this.state.audioTrack);
     let audioBitrate = get("audioBitrate", getText("audioBitrate"));
-    let useEndTime = refs.useEndTime.isChecked();
+    let useEndTime = get("useEndTime", refs.useEndTime.isChecked());
     let burnSubs = refs.burnSubs.isChecked();
     let subsTrack = get("subsTrack", this.state.subsTrack);
-    let start = getText("start");
-    let duration = getText("duration");
+    let start = get("start", getText("start"));
+    let duration = get("duration", getText("duration"));
     let threads = getText("threads", DEFAULT_VTHREADS);
     let speed = getText("speed", this.DEFAULT_SPEED);
     // Computed values.
@@ -448,6 +448,7 @@ export default React.createClass({
     setText("qmin", qmin);
     setText("qmax", qmax);
     setText("audioBitrate", audioBitrate);
+    refs.useEndTime.setChecked(useEndTime);
     setText("start", start);
     setText("duration", duration);
     setText("threads", threads);
