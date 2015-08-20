@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import {showTime} from "../ffmpeg";
 import {FlatButton, Slider, boxHeight, boxAspect} from "../theme";
 
 export default React.createClass({
@@ -46,8 +47,20 @@ export default React.createClass({
     seek: {
       display: "inline-block",
       margin: 0,
-      width: 650,
+      width: 540,
       height: 16,
+    },
+    time: {
+      display: "inline-block",
+      width: 100,
+      textAlign: "center",
+      marginRight: 5,
+      lineHeight: "24px",
+      fontSize: "14px",
+      color: "#ff4081",
+      border: "1px solid #ff4081",
+      boxSizing: "border-box",
+      borderRadius: 5,
     },
   },
   getFrameStyle: function() {
@@ -156,6 +169,9 @@ export default React.createClass({
             title="Mark start"
             onClick={this.handleCutStartClick}
             />
+          <code style={this.styles.time}>
+            {showTime(this.state.seek, {fixed: true})}
+          </code>
           <FlatButton
             primary
             style={this.styles.control}

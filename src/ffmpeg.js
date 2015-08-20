@@ -36,14 +36,15 @@ export function parseTime(time) {
 }
 
 // Taken from webm.py
-export function showTime(duration, sep) {
-  sep = sep || ":";
+export function showTime(duration, opts) {
+  opts = opts || {};
+  const sep = opts.sep || ":";
   let ts = pad2(duration / 3600) + sep;
   ts += pad2(duration % 3600 / 60) + sep;
   ts += pad2(duration % 60);
   const frac = duration % 1;
-  if (frac >= 0.1) {
-    ts += frac.toString().slice(1, 3);
+  if (frac >= 0.1 || opts.fixed) {
+    ts += frac.toFixed(1).slice(1, 3);
   }
   return ts;
 }
