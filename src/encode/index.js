@@ -23,9 +23,6 @@ const styles = {
     fontWeight: 500,
     fontSize: "18px",
     textTransform: "uppercase",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
   },
   progress: {
     margin: "4px 0 20px 0",
@@ -70,6 +67,12 @@ function basename(name) {
     const ext = name.slice(dotIndex + 1);
     if (ext !== "webm") name = name.slice(0, dotIndex);
   }
+  return name;
+}
+
+function getShortName(name) {
+  const MAX_LENGTH = 70;
+  if (name.length > MAX_LENGTH) name = name.slice(0, MAX_LENGTH) + "…";
   return name;
 }
 
@@ -402,7 +405,8 @@ export default React.createClass({
     const error = !!this.state.error;
     const progress = done ? 100 : error ? 0 : this.state.progress;
     const outname = this.getOutputFilename();
-    let header = "encoding " + outname + ": ";
+    const shortname = getShortName(outname);
+    let header = "encoding " + shortname + ": ";
     let url;
     if (error) {
       header = "encoding error";
