@@ -42,9 +42,9 @@ export function showTime(duration, opts) {
   let ts = pad2(duration / 3600) + sep;
   ts += pad2(duration % 3600 / 60) + sep;
   ts += pad2(duration % 60);
-  const frac = duration % 1;
+  const frac = duration % 1 || 0.01;
   if (frac >= 0.1 || opts.fixed) {
-    ts += frac.toFixed(1).slice(1, 3);
+    ts += frac.toString().slice(1, 3);
   }
   return ts;
 }
