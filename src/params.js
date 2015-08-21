@@ -70,10 +70,6 @@ const styles = {
     overflow: "hidden",
     paddingRight: 24,
   },
-  cropInput: {
-    width: 67.5,
-    marginBottom: 10,
-  },
 };
 
 // TODO(Kagami): We use fake object to satisfate `TextField.hasValue`
@@ -187,15 +183,6 @@ export default React.createClass({
     args.push("-auto-alt-ref", "1", "-lag-in-frames", "25");
 
     // Filters.
-    if (opts.cropx !== "" || opts.cropy !== "" ||
-        opts.cropw !== "" || opts.croph !== "") {
-      let crop = [];
-      if (opts.cropx !== "") crop.push("x=" + opts.cropx);
-      if (opts.cropy !== "") crop.push("y=" + opts.cropy);
-      if (opts.cropw !== "") crop.push("w=" + opts.cropw);
-      if (opts.croph !== "") crop.push("h=" + opts.croph);
-      vfilters.push("crop=" + crop.join(":"));
-    }
     // We force value in second field if first is specified in UI.
     if (opts.width !== "") {
       vfilters.push("scale=" + opts.width + ":" + opts.height);
@@ -313,10 +300,6 @@ export default React.createClass({
 
     let mode = get("mode", refs.mode.getSelectedValue());
     let videoTrack = get("videoTrack", this.state.videoTrack);
-    let cropx = getText("cropx");
-    let cropy = getText("cropy");
-    let cropw = getText("cropw");
-    let croph = getText("croph");
     let limit = get("limit", getText("limit"));
     let quality = get("quality", getText("quality"));
     let width = getText("width");
@@ -340,25 +323,6 @@ export default React.createClass({
     let rawArgs;
 
     // Validate & transform.
-    // NOTE(Kagami): Crop & scale filter parameters can contain
-    // arbitrary expressions but we validate them as numbers anyway
-    // because user can always fix them in raw opts field.
-    cropx = validate(cropx, "cropxErr", (v) => {
-      if (v === "") return v;
-      return requireInt(v);
-    });
-    cropy = validate(cropy, "cropyErr", (v) => {
-      if (v === "") return v;
-      return requireInt(v);
-    });
-    cropw = validate(cropw, "cropwErr", (v) => {
-      if (v === "") return v;
-      return requireInt(v);
-    });
-    croph = validate(croph, "crophErr", (v) => {
-      if (v === "") return v;
-      return requireInt(v);
-    });
     limit = validate(limit, "limitErr", (v) => {
       v = requireFloat(v);
       if (mode === "limit" && v <= 0) throw new Error("Value is too small");
@@ -369,6 +333,9 @@ export default React.createClass({
       v = requireInt(v);
       return requireRange(v, this.MIN_Q, this.MAX_Q);
     });
+    // NOTE(Kagami): Scale filter parameters can contain arbitrary
+    // expressions but we validate them as numbers anyway because user
+    // can always fix them in raw args field.
     width = validate(width, "widthErr", (v) => {
       if (v === "") {
         if (height !== "" && height !== "-1") return -1;
@@ -437,10 +404,6 @@ export default React.createClass({
     // XXX(Kagami): We don't use value property of `TextField` because
     // it's very slow, see:
     // <https://github.com/callemall/material-ui/issues/1040>.
-    setText("cropx", cropx);
-    setText("cropy", cropy);
-    setText("cropw", cropw);
-    setText("croph", croph);
     setText("limit", limit);
     setText("quality", quality);
     setText("width", width);
@@ -457,9 +420,7 @@ export default React.createClass({
 
     // Set validated and normalized values.
     let newState = {
-      mode, videoTrack,
-      cropx, cropy, cropw, croph,
-      limit, quality, width, height, qmin, qmax,
+      mode, videoTrack, limit, quality, width, height, qmin, qmax,
       noAudio, audioTrack, audioBitrate,
       useEndTime, burnSubs, subsTrack, start, duration, threads, speed,
       outduration,
@@ -507,40 +468,6 @@ export default React.createClass({
             style={styles.tracks}
             menuItemStyle={styles.track}
           />
-          <ClearFix>
-            <SmallInput
-              ref="cropx"
-              errorText={this.state.cropxErr}
-              defaultValue={Empty}
-              floatingLabelText="crop x"
-              onBlur={this.handleEvent}
-              style={styles.cropInput}
-            />
-            <SmallInput
-              ref="cropy"
-              errorText={this.state.cropyErr}
-              defaultValue={Empty}
-              floatingLabelText="crop y"
-              onBlur={this.handleEvent}
-              style={styles.cropInput}
-            />
-            <SmallInput
-              ref="cropw"
-              errorText={this.state.cropwErr}
-              defaultValue={Empty}
-              floatingLabelText="crop w"
-              onBlur={this.handleEvent}
-              style={styles.cropInput}
-            />
-            <SmallInput
-              ref="croph"
-              errorText={this.state.crophErr}
-              defaultValue={Empty}
-              floatingLabelText="crop h"
-              onBlur={this.handleEvent}
-              style={styles.cropInput}
-            />
-          </ClearFix>
         </div>
         <div style={styles.right}>
           <ClearFix>
