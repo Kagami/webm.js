@@ -119,7 +119,9 @@ export default React.createClass({
           <table style={styles.infoLeft}>
             <tr>
               <td style={styles.left}>Name:</td>
-              <td style={styles.right}>{source.origName}</td>
+              <td style={styles.right} title={source.origName}>
+                {source.origName}
+              </td>
             </tr>
             <tr>
               <td style={styles.left}>Duration:</td>

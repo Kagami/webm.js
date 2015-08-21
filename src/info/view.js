@@ -9,10 +9,10 @@ import {FlatButton, Slider, boxHeight, boxAspect} from "../theme";
 
 export default React.createClass({
   getInitialState: function() {
-    return {seek: 0};
+    return {frame: 1};
   },
   componentDidMount: function() {
-    this.decodeFrame(this.state.seek);
+    this.decodeFrame(this.state.frame);
   },
   styles: {
     root: {
@@ -63,6 +63,10 @@ export default React.createClass({
       borderRadius: 5,
     },
   },
+  getTrack: function() {
+    // Use only first video track for now.
+    return this.props.info.video[0];
+  },
   getFrameStyle: function() {
     let style = Object.assign({}, this.styles.frame);
     const track = this.getTrack();
@@ -74,34 +78,30 @@ export default React.createClass({
     }
     return style;
   },
-  getTrack: function() {
-    // Use only first video track for now.
-    return this.props.info.video[0];
+  getTime: function(frame) {
+    return (frame - 1) / this.getTrack().fps;
   },
-  getStep: function() {
-    return 1 / this.getTrack().fps;
-  },
-  getLastPTS: function() {
-    const induration = this.props.info.duration;
-    return induration - this.getStep();
+  getTotalFrames: function() {
+    return Math.ceil(this.props.info.duration * this.getTrack().fps);
   },
   isPrevDisabled: function() {
     return (
-      this.state.seek <= 0 ||
+      this.state.frame <= 1 ||
       this.state.decodingFrame
     );
   },
   isNextDisabled: function() {
     return (
-      this.state.seek >= this.getLastPTS() ||
+      this.state.frame >= this.getTotalFrames() - 1 ||
       this.state.decodingFrame
     );
   },
-  decodeFrame: function(seek) {
+  decodeFrame: function(frame) {
     // FIXME(Kagami): Prefetching?
     this.setState({decodingFrame: true});
-    this.props.prober.decode(this.props.source, seek).then(frame => {
-      const blob = new Blob([frame.data]);
+    const time = this.getTime(frame);
+    this.props.prober.decode(this.props.source, time).then(frameObj => {
+      const blob = new Blob([frameObj.data]);
       const frameUrl = URL.createObjectURL(blob);
       this.setState({frameUrl, decodingFrame: false});
     }).catch(e => {
@@ -110,34 +110,34 @@ export default React.createClass({
     });
   },
   handlePrevClick: function() {
-    let seek = this.state.seek - this.getStep();
-    // Fix FP inaccuracy.
-    if (seek < 0.001) seek = 0;
-    this.setState({seek});
-    this.decodeFrame(seek);
+    const frame = this.state.frame - 1;
+    this.setState({frame});
+    this.decodeFrame(frame);
   },
   handleNextClick: function() {
-    const seek = Math.min(this.state.seek + this.getStep(), this.getLastPTS());
-    this.setState({seek});
-    this.decodeFrame(seek);
+    const frame = this.state.frame + 1;
+    this.setState({frame});
+    this.decodeFrame(frame);
   },
-  handleSeekChange: function(e, seek) {
-    this.setState({seek});
+  handleSeekChange: function(e, frame) {
+    this.setState({frame});
     if (this.state.draggingSeek) return;
-    this.decodeFrame(seek);
+    this.decodeFrame(frame);
   },
   handleSeekDragStart: function() {
     this.setState({draggingSeek: true});
   },
   handleSeekDragStop: function() {
     this.setState({draggingSeek: false});
-    this.decodeFrame(this.state.seek);
+    this.decodeFrame(this.state.frame);
   },
   handleCutStartClick: function() {
-    this.props.onParams({start: this.state.seek});
+    const time = this.getTime(this.state.frame);
+    this.props.onParams({start: time});
   },
   handleCutEndClick: function() {
-    this.props.onParams({duration: this.state.seek, useEndTime: true});
+    const time = this.getTime(this.state.frame);
+    this.props.onParams({duration: time, useEndTime: true});
   },
   render: function() {
     // TODO(Kagami): Use icons.
@@ -170,7 +170,7 @@ export default React.createClass({
             onClick={this.handleCutStartClick}
             />
           <code style={this.styles.time}>
-            {showTime(this.state.seek, {fixed: true})}
+            {showTime(this.getTime(this.state.frame), {fixed: true})}
           </code>
           <FlatButton
             primary
@@ -183,9 +183,11 @@ export default React.createClass({
             <Slider
               ref="seek"
               name="seek"
-              value={this.state.seek}
-              step={this.getStep()}
-              max={this.getLastPTS()}
+              value={this.state.frame}
+              defaultValue={1}
+              min={1}
+              step={1}
+              max={this.getTotalFrames() - 1}
               style={this.styles.seek}
               onChange={this.handleSeekChange}
               onDragStart={this.handleSeekDragStart}
