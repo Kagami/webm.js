@@ -132,11 +132,11 @@ export default React.createClass({
     this.decodeFrame(this.state.frame);
   },
   handleCutStartClick: function() {
-    const time = this.getTime(this.state.frame);
+    const time = this.getTime(this.state.frame).toFixed(3);
     this.props.onParams({start: time});
   },
   handleCutEndClick: function() {
-    const time = this.getTime(this.state.frame);
+    const time = this.getTime(this.state.frame).toFixed(3);
     this.props.onParams({duration: time, useEndTime: true});
   },
   render: function() {
