@@ -79,9 +79,12 @@ export default React.createClass({
     return style;
   },
   getTime: function(frame) {
-    return (frame - 1) / this.getTrack().fps;
+    const time = (frame - 1) / this.getTrack().fps;
+    return Number(time.toFixed(3));
   },
   getTotalFrames: function() {
+    // TODO(Kagami): This is _not_ accurate. We need to somehow parse
+    // real frame boundaries. Use ffprobe to analyze video info?
     return Math.ceil(this.props.info.duration * this.getTrack().fps);
   },
   isPrevDisabled: function() {
@@ -132,11 +135,11 @@ export default React.createClass({
     this.decodeFrame(this.state.frame);
   },
   handleCutStartClick: function() {
-    const time = this.getTime(this.state.frame).toFixed(3);
+    const time = this.getTime(this.state.frame);
     this.props.onParams({start: time});
   },
   handleCutEndClick: function() {
-    const time = this.getTime(this.state.frame).toFixed(3);
+    const time = this.getTime(this.state.frame);
     this.props.onParams({duration: time, useEndTime: true});
   },
   render: function() {
