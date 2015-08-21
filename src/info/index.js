@@ -58,6 +58,7 @@ const styles = {
     maxWidth: 350,
     overflow: "hidden",
     textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   error: {
     color: secondaryColor,
