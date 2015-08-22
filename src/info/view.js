@@ -155,22 +155,23 @@ export default React.createClass({
   },
   decodeFrame: function(neededFrame) {
     let {frameUrl, fetchedFrame, count} = this.frameCacher.get(neededFrame);
-    if (frameUrl) this.setState({frameUrl});
-    if (this.state.decodingFrame || !count) return;
-
     console.log(
       `Needed ${neededFrame}, fetching ${count} frames ` +
       `starting with ${fetchedFrame}`
     );
-    this.setState({decodingFrame: true});
+    if (frameUrl) this.setState({frameUrl});
+    if (this.state.decodingFrame || !count) return;
+
+    this.setState({decodingFrame: true, blockingDecode: !frameUrl});
     const source = this.props.source;
     const time = this.getTime(fetchedFrame);
     this.props.prober.decode({source, count, time}).then(files => {
-      frameUrl = this.frameCacher.setMany(neededFrame, fetchedFrame, files);
+      const url = this.frameCacher.setMany(neededFrame, fetchedFrame, files);
+      this.setState({decodingFrame: false, blockingDecode: false});
+      if (!frameUrl) this.setState({frameUrl: url});
     }).catch(e => {
       if (window.console) console.error(e);
-    }).then(() => {
-      this.setState({frameUrl, decodingFrame: false});
+      this.setState({frameUrl, decodingFrame: false, blockingDecode: false});
     });
   },
   handlePlayClick: function() {
@@ -182,20 +183,21 @@ export default React.createClass({
     this.setState({prettyTime, validTime});
   },
   handleTimeKey: function(e) {
+    if (e.key === "q" || e.key === "w") e.preventDefault();
+    if (this.state.blockingDecode) return;
+
     const smallShift = 1;                           // 1frame
     const bigShift = 1 * Math.ceil(this.getFPS());  // 1s
     let frame;
 
     switch (e.key) {
     case "q":
-      e.preventDefault();
       frame = Math.max(1, this.state.frame - smallShift);
       this.setState({frame});
       this.setTime(frame);
       this.decodeFrame(frame);
       break;
     case "w":
-      e.preventDefault();
       frame = Math.min(this.state.frame + smallShift, this.getTotalFrames());
       this.setState({frame});
       this.setTime(frame);
