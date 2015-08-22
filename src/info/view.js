@@ -34,7 +34,8 @@ function createFrameCacher(totalFrames) {
         cache[frame++]
       ) reserve++;
 
-      if (reserve > FRAME_RESERVE_COUNT) {
+      if (reserve > FRAME_RESERVE_COUNT ||
+          reserve > totalFrames - neededFrame) {
         return {frameUrl, count: 0};
       }
 
