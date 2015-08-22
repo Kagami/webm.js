@@ -8,11 +8,20 @@ import {parseTime, showTime} from "../ffmpeg";
 import {FlatButton, Slider, boxHeight, boxAspect} from "../theme";
 import {tryRun} from "../util";
 
+function getSparseLength(arr) {
+  let len = 0;
+  arr.forEach(() => len++);
+  return len;
+}
+
 function createFrameCacher(totalFrames) {
+  const MAX_CACHE_SIZE = 200;
   const FRAME_PREFETCH_COUNT = 10;
   const FRAME_RESERVE_COUNT = 5;
 
-  let cache = Array(totalFrames);
+  // Use 1-based indexes for convenience.
+  let cache = Array(totalFrames + 1);
+
   return {
     get: function(neededFrame) {
       const frameUrl = cache[neededFrame];
@@ -26,7 +35,7 @@ function createFrameCacher(totalFrames) {
       ) reserve++;
 
       if (reserve > FRAME_RESERVE_COUNT) {
-        return {frameUrl, fetchedFrame: 0, count: 0};
+        return {frameUrl, count: 0};
       }
 
       const count = Math.min(FRAME_PREFETCH_COUNT, totalFrames - neededFrame);
@@ -34,6 +43,14 @@ function createFrameCacher(totalFrames) {
       return {frameUrl, fetchedFrame, count};
     },
     setMany: function(neededFrame, fetchedFrame, files) {
+      if (getSparseLength(cache) > MAX_CACHE_SIZE) {
+        let newCache = Array(totalFrames + 1);
+        // Keep prefetched frames of old cache near the current pos.
+        for (let frame = neededFrame; frame < fetchedFrame; frame++) {
+          newCache[frame] = cache[frame];
+        }
+        cache = newCache;
+      }
       files.forEach(function(frameObj, i) {
         const blob = new Blob([frameObj.data]);
         const frameUrl = URL.createObjectURL(blob);
@@ -155,10 +172,10 @@ export default React.createClass({
   },
   decodeFrame: function(neededFrame) {
     let {frameUrl, fetchedFrame, count} = this.frameCacher.get(neededFrame);
-    console.log(
-      `Needed ${neededFrame}, fetching ${count} frames ` +
-      `starting with ${fetchedFrame}`
-    );
+    // console.log(
+    //   `Needed ${neededFrame}, fetching ${count} frames ` +
+    //   `starting with ${fetchedFrame}`
+    // );
     if (frameUrl) this.setState({frameUrl});
     if (this.state.decodingFrame || !count) return;
 
