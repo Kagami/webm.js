@@ -70,9 +70,6 @@ export default React.createClass({
     this.setTime(this.state.frame);
     this.decodeFrame(this.state.frame);
   },
-  componentDidMount: function() {
-    this.focusTime();
-  },
   styles: {
     root: {
       borderBottom: "1px solid #e0e0e0",
@@ -165,10 +162,7 @@ export default React.createClass({
     this.setState({prettyTime, validTime});
   },
   focusTime: function() {
-    const node = React.findDOMNode(this.refs.time);
-    const slen = node.value.length;
-    node.focus();
-    node.setSelectionRange(slen, slen);
+    React.findDOMNode(this.refs.time).focus();
   },
   decodeFrame: function(neededFrame) {
     let {frameUrl, fetchedFrame, count} = this.frameCacher.get(neededFrame);
