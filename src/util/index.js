@@ -108,6 +108,14 @@ export function str2ab(str) {
   return new Uint8Array(str.split("").map(ch => ch.charCodeAt(0)));
 }
 
+export function tryRun(fn, arg, def) {
+  try {
+    return fn(arg);
+  } catch(e) {
+    return def;
+  }
+}
+
 export const MIN_VTHREADS = 1;
 export const MAX_VTHREADS = 8;
 export const FALLBACK_VTHREADS = 4;

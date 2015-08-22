@@ -12,7 +12,7 @@ import Download from "./download";
 import {
   ahas, getopt, clearopt, fixopt, range, str2ab,
   MIN_VTHREADS, MAX_VTHREADS, DEFAULT_VTHREADS,
-  showSize, showNow,
+  showSize, showNow, tryRun,
 } from "../util";
 
 const styles = {
@@ -44,14 +44,6 @@ const styles = {
     marginBottom: 10,
   },
 };
-
-function tryRun(fn, arg, def) {
-  try {
-    return fn(arg);
-  } catch(e) {
-    return def;
-  }
-}
 
 function timer() {
   const start = new Date().getTime();

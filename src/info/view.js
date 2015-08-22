@@ -4,14 +4,16 @@
  */
 
 import React from "react";
-import {showTime} from "../ffmpeg";
+import {parseTime, showTime} from "../ffmpeg";
 import {FlatButton, Slider, boxHeight, boxAspect} from "../theme";
+import {tryRun} from "../util";
 
 export default React.createClass({
   getInitialState: function() {
     return {frame: 1};
   },
-  componentDidMount: function() {
+  componentWillMount: function() {
+    this.setTime(this.state.frame);
     this.decodeFrame(this.state.frame);
   },
   styles: {
@@ -47,7 +49,7 @@ export default React.createClass({
     seek: {
       display: "inline-block",
       margin: 0,
-      width: 540,
+      width: 600,
       height: 16,
     },
     time: {
@@ -57,15 +59,11 @@ export default React.createClass({
       marginRight: 5,
       lineHeight: "24px",
       fontSize: "14px",
-      color: "#ff4081",
-      border: "1px solid #ff4081",
+      borderWidth: 1,
+      borderStyle: "solid",
       boxSizing: "border-box",
       borderRadius: 5,
     },
-  },
-  getTrack: function() {
-    // Use only first video track for now.
-    return this.props.info.video[0];
   },
   getFrameStyle: function() {
     let style = Object.assign({}, this.styles.frame);
@@ -78,26 +76,36 @@ export default React.createClass({
     }
     return style;
   },
+  getTimeStyle: function() {
+    let style = Object.assign({}, this.styles.time);
+    style.color = this.state.validTime ? "#ff4081" : "#f00";
+    style.borderColor = this.state.validTime ? "#dcdad5" : "#f00";
+    return style;
+  },
+  getTrack: function() {
+    // Use only first video track for now.
+    return this.props.info.video[0];
+  },
+  getFPS: function() {
+    return this.getTrack().fps;
+  },
   getTime: function(frame) {
-    const time = (frame - 1) / this.getTrack().fps;
+    const time = (frame - 1) / this.getFPS();
     return Number(time.toFixed(3));
+  },
+  getFrame: function(prettyTime) {
+    const time = parseTime(prettyTime);
+    return Math.floor(time * this.getFPS()) + 1;
   },
   getTotalFrames: function() {
     // TODO(Kagami): This is _not_ accurate. We need to somehow parse
     // real frame boundaries. Use ffprobe to analyze video info?
-    return Math.ceil(this.props.info.duration * this.getTrack().fps);
+    return Math.ceil(this.props.info.duration * this.getFPS());
   },
-  isPrevDisabled: function() {
-    return (
-      this.state.frame <= 1 ||
-      this.state.decodingFrame
-    );
-  },
-  isNextDisabled: function() {
-    return (
-      this.state.frame >= this.getTotalFrames() - 1 ||
-      this.state.decodingFrame
-    );
+  setTime: function(frame) {
+    const prettyTime = showTime(this.getTime(frame), {fixed: true});
+    const validTime = true;
+    this.setState({prettyTime, validTime});
   },
   decodeFrame: function(frame) {
     // FIXME(Kagami): Prefetching?
@@ -112,18 +120,68 @@ export default React.createClass({
       if (window.console) console.error(e);
     });
   },
-  handlePrevClick: function() {
-    const frame = this.state.frame - 1;
-    this.setState({frame});
-    this.decodeFrame(frame);
+  handlePlayClick: function() {
   },
-  handleNextClick: function() {
-    const frame = this.state.frame + 1;
-    this.setState({frame});
-    this.decodeFrame(frame);
+  handleTimeChange: function(e) {
+    const prettyTime = e.target.value;
+    const time = tryRun(parseTime, prettyTime);
+    const validTime = time != null && time < this.props.info.duration;
+    this.setState({prettyTime, validTime});
+  },
+  handleTimeKey: function(e) {
+    if (e.key === "q" || e.key === "w") e.preventDefault();
+    if (this.state.decodingFrame) return;
+
+    const smallShift = 1;                           // 1frame
+    const bigShift = 1 * Math.ceil(this.getFPS());  // 1s
+    let frame;
+
+    switch (e.key) {
+    case "q":
+      frame = Math.max(1, this.state.frame - smallShift);
+      this.setState({frame});
+      this.setTime(frame);
+      this.decodeFrame(frame);
+      break;
+    case "w":
+      frame = Math.min(this.state.frame + smallShift, this.getTotalFrames());
+      this.setState({frame});
+      this.setTime(frame);
+      this.decodeFrame(frame);
+      break;
+    case "ArrowUp":
+      frame = Math.min(this.state.frame + bigShift, this.getTotalFrames());
+      this.setState({frame});
+      this.setTime(frame);
+      this.decodeFrame(frame);
+      break;
+    case "ArrowDown":
+      frame = Math.max(1, this.state.frame - bigShift);
+      this.setState({frame});
+      this.setTime(frame);
+      this.decodeFrame(frame);
+      break;
+    case "Enter":
+      if (this.state.validTime) {
+        frame = this.getFrame(this.state.prettyTime);
+        this.setState({frame});
+        this.setTime(frame);
+        this.decodeFrame(frame);
+      }
+      break;
+    }
+  },
+  handleCutStartClick: function() {
+    const time = this.getTime(this.state.frame);
+    this.props.onParams({start: time});
+  },
+  handleCutEndClick: function() {
+    const time = this.getTime(this.state.frame);
+    this.props.onParams({duration: time, useEndTime: true});
   },
   handleSeekChange: function(e, frame) {
     this.setState({frame});
+    this.setTime(frame);
     if (this.state.draggingSeek) return;
     this.decodeFrame(frame);
   },
@@ -133,14 +191,6 @@ export default React.createClass({
   handleSeekDragStop: function() {
     this.setState({draggingSeek: false});
     this.decodeFrame(this.state.frame);
-  },
-  handleCutStartClick: function() {
-    const time = this.getTime(this.state.frame);
-    this.props.onParams({start: time});
-  },
-  handleCutEndClick: function() {
-    const time = this.getTime(this.state.frame);
-    this.props.onParams({duration: time, useEndTime: true});
   },
   render: function() {
     // TODO(Kagami): Use icons.
@@ -153,18 +203,11 @@ export default React.createClass({
         <div style={this.styles.controls}>
           <FlatButton
             style={this.styles.control}
-            label="◄"
-            title="Previous frame"
-            onClick={this.handlePrevClick}
-            disabled={this.isPrevDisabled()}
+            label="▶"
+            title="Play/pause"
+            onClick={this.handlePlayClick}
+            disabled
             />
-          <FlatButton
-            style={this.styles.control}
-            label="►"
-            title="Next frame"
-            onClick={this.handleNextClick}
-            disabled={this.isNextDisabled()}
-          />
           <FlatButton
             primary
             style={this.styles.control}
@@ -172,9 +215,14 @@ export default React.createClass({
             title="Mark start"
             onClick={this.handleCutStartClick}
             />
-          <code style={this.styles.time}>
-            {showTime(this.getTime(this.state.frame), {fixed: true})}
-          </code>
+          <input
+            title="Use Q/W/Up/Down/Enter to adjust seek position"
+            style={this.getTimeStyle()}
+            maxLength={10}
+            value={this.state.prettyTime}
+            onChange={this.handleTimeChange}
+            onKeyDown={this.handleTimeKey}
+          />
           <FlatButton
             primary
             style={this.styles.control}
@@ -190,7 +238,7 @@ export default React.createClass({
               defaultValue={1}
               min={1}
               step={1}
-              max={this.getTotalFrames() - 1}
+              max={this.getTotalFrames()}
               style={this.styles.seek}
               onChange={this.handleSeekChange}
               onDragStart={this.handleSeekDragStart}
@@ -198,7 +246,6 @@ export default React.createClass({
             />
           </div>
           <FlatButton
-            primary
             label="⏏"
             title="Back"
             style={this.styles.control}
