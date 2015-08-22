@@ -138,7 +138,7 @@ export class Prober {
     });
   }
 
-  decode(source, time) {
+  decode({source, time, count}) {
     let worker = this.worker;
     function cleanup() {
       delete worker.onmessage;
@@ -151,13 +151,16 @@ export class Prober {
         mountpoint: WORKERFS_DIR,
       };
       // TODO(Kagami): Use selected video track, burn subs?
+      // TODO(Kagami): Prefetch in both directions to speedup seek back?
       worker.postMessage({
         type: "run",
         arguments: [
-          "-ss", time + "", "-i", source.path,
-          "-map", "0:v:0", "-frames:v", "1",
+          "-ss", time + "",
+          "-i", source.path,
+          "-map", "0:v:0",
+          "-frames:v", count + "",
           "-loglevel", "fatal",
-          "frame.jpg",
+          "%02d.jpg",
         ],
         TOTAL_MEMORY: DECODE_MEMORY,
         mounts: [wfsMount],
@@ -177,12 +180,7 @@ export class Prober {
           break;
         case "done":
           cleanup();
-          const files = msg.data.MEMFS;
-          if (files.length) {
-            resolve(files[0]);
-          } else {
-            reject(new Error("No output"));
-          }
+          resolve(msg.data.MEMFS);
           break;
         }
       };

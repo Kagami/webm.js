@@ -8,13 +8,53 @@ import {parseTime, showTime} from "../ffmpeg";
 import {FlatButton, Slider, boxHeight, boxAspect} from "../theme";
 import {tryRun} from "../util";
 
+function createFrameCacher(totalFrames) {
+  const FRAME_PREFETCH_COUNT = 10;
+  const FRAME_RESERVE_COUNT = 5;
+
+  let cache = Array(totalFrames);
+  return {
+    get: function(neededFrame) {
+      const frameUrl = cache[neededFrame];
+
+      let frame = neededFrame;
+      let reserve = 0;
+      while (
+        frame <= totalFrames &&
+        reserve <= FRAME_RESERVE_COUNT &&
+        cache[frame++]
+      ) reserve++;
+
+      if (reserve > FRAME_RESERVE_COUNT) {
+        return {frameUrl, fetchedFrame: 0, count: 0};
+      }
+
+      const count = Math.min(FRAME_PREFETCH_COUNT, totalFrames - neededFrame);
+      const fetchedFrame = neededFrame + reserve;
+      return {frameUrl, fetchedFrame, count};
+    },
+    setMany: function(neededFrame, fetchedFrame, files) {
+      files.forEach(function(frameObj, i) {
+        const blob = new Blob([frameObj.data]);
+        const frameUrl = URL.createObjectURL(blob);
+        cache[fetchedFrame + i] = frameUrl;
+      });
+      return cache[neededFrame];
+    },
+  };
+}
+
 export default React.createClass({
   getInitialState: function() {
     return {frame: 1};
   },
   componentWillMount: function() {
+    this.frameCacher = createFrameCacher(this.getTotalFrames());
     this.setTime(this.state.frame);
     this.decodeFrame(this.state.frame);
+  },
+  componentDidMount: function() {
+    this.focusTime();
   },
   styles: {
     root: {
@@ -107,17 +147,30 @@ export default React.createClass({
     const validTime = true;
     this.setState({prettyTime, validTime});
   },
-  decodeFrame: function(frame) {
-    // FIXME(Kagami): Prefetching?
+  focusTime: function() {
+    const node = React.findDOMNode(this.refs.time);
+    const slen = node.value.length;
+    node.focus();
+    node.setSelectionRange(slen, slen);
+  },
+  decodeFrame: function(neededFrame) {
+    let {frameUrl, fetchedFrame, count} = this.frameCacher.get(neededFrame);
+    if (frameUrl) this.setState({frameUrl});
+    if (this.state.decodingFrame || !count) return;
+
+    console.log(
+      `Needed ${neededFrame}, fetching ${count} frames ` +
+      `starting with ${fetchedFrame}`
+    );
     this.setState({decodingFrame: true});
-    const time = this.getTime(frame);
-    this.props.prober.decode(this.props.source, time).then(frameObj => {
-      const blob = new Blob([frameObj.data]);
-      const frameUrl = URL.createObjectURL(blob);
-      this.setState({frameUrl, decodingFrame: false});
+    const source = this.props.source;
+    const time = this.getTime(fetchedFrame);
+    this.props.prober.decode({source, count, time}).then(files => {
+      frameUrl = this.frameCacher.setMany(neededFrame, fetchedFrame, files);
     }).catch(e => {
-      this.setState({decodingFrame: false});
       if (window.console) console.error(e);
+    }).then(() => {
+      this.setState({frameUrl, decodingFrame: false});
     });
   },
   handlePlayClick: function() {
@@ -129,21 +182,20 @@ export default React.createClass({
     this.setState({prettyTime, validTime});
   },
   handleTimeKey: function(e) {
-    if (e.key === "q" || e.key === "w") e.preventDefault();
-    if (this.state.decodingFrame) return;
-
     const smallShift = 1;                           // 1frame
     const bigShift = 1 * Math.ceil(this.getFPS());  // 1s
     let frame;
 
     switch (e.key) {
     case "q":
+      e.preventDefault();
       frame = Math.max(1, this.state.frame - smallShift);
       this.setState({frame});
       this.setTime(frame);
       this.decodeFrame(frame);
       break;
     case "w":
+      e.preventDefault();
       frame = Math.min(this.state.frame + smallShift, this.getTotalFrames());
       this.setState({frame});
       this.setTime(frame);
@@ -184,6 +236,7 @@ export default React.createClass({
     this.setTime(frame);
     if (this.state.draggingSeek) return;
     this.decodeFrame(frame);
+    this.focusTime();
   },
   handleSeekDragStart: function() {
     this.setState({draggingSeek: true});
@@ -191,9 +244,11 @@ export default React.createClass({
   handleSeekDragStop: function() {
     this.setState({draggingSeek: false});
     this.decodeFrame(this.state.frame);
+    this.focusTime();
   },
   render: function() {
     // TODO(Kagami): Use icons.
+    // TODO(Kagami): Show some placeholder if frameUrl is undefined?
     return (
       <div style={this.styles.root}>
         <div style={this.styles.view}>
@@ -216,6 +271,7 @@ export default React.createClass({
             onClick={this.handleCutStartClick}
             />
           <input
+            ref="time"
             title="Use Q/W/Up/Down/Enter to adjust seek position"
             style={this.getTimeStyle()}
             maxLength={10}
