@@ -105,8 +105,8 @@ export default React.createClass({
         <span>If you think your video is fine, please open issue with the log
         attached at </span>
         <a href="https://github.com/Kagami/webm.js/issues">bugtracker</a>.
-        <span> Or go </span>
-        <InlineButton primary label="back" onClick={this.props.onClear} />.
+        <span> Or </span>
+        <InlineButton primary label="go back" onClick={this.props.onClear} />.
       </Section>
     ) : null;
   },

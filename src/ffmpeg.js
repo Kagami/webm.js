@@ -151,7 +151,6 @@ export class Prober {
         mountpoint: WORKERFS_DIR,
       };
       // TODO(Kagami): Use selected video track, burn subs?
-      // TODO(Kagami): Prefetch in both directions to speedup seek back?
       worker.postMessage({
         type: "run",
         arguments: [
