@@ -170,7 +170,7 @@ export default React.createClass({
     let {frameUrl, fetchedFrame, count} = this.frameCacher.get(neededFrame);
     if (frameUrl) {
       this.setState({frameUrl});
-    } else {
+    } else if (count) {
       // console.log("+++ BLOCKED");
       this.setState({blockingDecode: true});
     }
