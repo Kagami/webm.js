@@ -113,8 +113,9 @@ export default React.createClass({
         <span style={styles.error}>{error.message}</span><br />
         <span>If you think your video is fine, please open issue with the log
         attached at </span>
-        <a href="https://github.com/Kagami/webm.js/issues">bugtracker</a>.
-        <span> Or </span>
+        <a href="https://github.com/Kagami/webm.js/issues">
+          <InlineButton primary label="bugtracker" />
+        </a><span>. Or </span>
         <InlineButton primary label="go back" onClick={this.props.onClear} />.
       </Section>
     ) : null;
