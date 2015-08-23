@@ -16,7 +16,7 @@ function getSparseLength(arr) {
 
 function createFrameCacher(totalFrames) {
   const MAX_CACHE_SIZE = 200;
-  const FRAME_PREFETCH_COUNT = 40;
+  const FRAME_PREFETCH_COUNT = 30;
   const FRAME_RESERVE_COUNT = 30;
 
   // Use 1-based indexes for convenience.
@@ -168,7 +168,12 @@ export default React.createClass({
   },
   decodeFrame: function(neededFrame) {
     let {frameUrl, fetchedFrame, count} = this.frameCacher.get(neededFrame);
-    if (frameUrl) this.setState({frameUrl});
+    if (frameUrl) {
+      this.setState({frameUrl});
+    } else {
+      // console.log("+++ BLOCKED");
+      this.setState({blockingDecode: true});
+    }
     if (this.state.decodingFrame || !count) return;
 
     // console.log(
@@ -176,11 +181,12 @@ export default React.createClass({
     //   `starting with ${fetchedFrame}`
     // );
 
-    this.setState({decodingFrame: true, blockingDecode: !frameUrl});
+    this.setState({decodingFrame: true});
     const source = this.props.source;
     const time = this.getTime(fetchedFrame);
     this.props.prober.decode({source, count, time}).then(files => {
       const url = this.frameCacher.setMany(neededFrame, fetchedFrame, files);
+      // if (this.state.blockingDecode) console.log("--- UNBLOCKED");
       this.setState({decodingFrame: false, blockingDecode: false});
       if (!frameUrl) this.setState({frameUrl: url});
     }).catch(e => {
