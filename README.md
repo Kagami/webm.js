@@ -14,9 +14,11 @@
 
 ### What's this?
 
-webm.js is a simple one-page application that allows you to convert videos to WebM format right into your browser, without any plugins or server-side involved. Since WebM is part of HTML5 stack, why can't we create one without leaving the browser?
+webm.js is a simple one-page application that allows you to convert videos to WebM format right into your browser, without any plugins or server-side involved. It is built upon FFmpeg, libvpx and libopus which were ported to JavaScript using Emscripten. Since WebM is part of HTML5 stack, why can't we create one without leaving the browser?
 
-webm.js is built upon FFmpeg, libvpx and libopus which were ported to JavaScript using Emscripten. Check demo [here](https://kagami.github.io/webm.js/).
+### How to try it?
+
+Latest build of webm.js is [available here](https://kagami.github.io/webm.js/). **NOTE:** video player feature is experimental and slow.
 
 ### Is it fast?
 
