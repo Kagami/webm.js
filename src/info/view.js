@@ -16,8 +16,8 @@ function getSparseLength(arr) {
 
 function createFrameCacher(totalFrames) {
   const MAX_CACHE_SIZE = 200;
-  const FRAME_PREFETCH_COUNT = 10;
-  const FRAME_RESERVE_COUNT = 5;
+  const FRAME_PREFETCH_COUNT = 40;
+  const FRAME_RESERVE_COUNT = 30;
 
   // Use 1-based indexes for convenience.
   let cache = Array(totalFrames + 1);
@@ -64,6 +64,7 @@ function createFrameCacher(totalFrames) {
 
 export default React.createClass({
   getInitialState: function() {
+    this.playTimeout = Math.floor(1000 / this.PLAY_FPS);
     return {frame: 1};
   },
   componentWillMount: function() {
@@ -167,12 +168,13 @@ export default React.createClass({
   },
   decodeFrame: function(neededFrame) {
     let {frameUrl, fetchedFrame, count} = this.frameCacher.get(neededFrame);
+    if (frameUrl) this.setState({frameUrl});
+    if (this.state.decodingFrame || !count) return;
+
     // console.log(
     //   `Needed ${neededFrame}, fetching ${count} frames ` +
     //   `starting with ${fetchedFrame}`
     // );
-    if (frameUrl) this.setState({frameUrl});
-    if (this.state.decodingFrame || !count) return;
 
     this.setState({decodingFrame: true, blockingDecode: !frameUrl});
     const source = this.props.source;
@@ -186,7 +188,37 @@ export default React.createClass({
       this.setState({frameUrl, decodingFrame: false, blockingDecode: false});
     });
   },
+  // TODO(Kagami): We do not support realtime playing in current
+  // implementation because it's too slow. Better implementation would
+  // require full-featured media player port.
+  PLAY_FPS: 15,
+  playFrame: function() {
+    if (!this.state.blockingDecode) {
+      const frame = this.state.frame + 1;
+      if (frame > this.getTotalFrames()) {
+        return this.setState({playing: false});
+      }
+      this.setState({frame});
+      this.setTime(frame);
+      this.decodeFrame(frame);
+    }
+    this.playTid = setTimeout(this.playFrame, this.playTimeout);
+  },
+  isPlayDisabled: function() {
+    return !this.state.playing && (
+      this.state.decodingFrame ||
+      this.state.frame >= this.getTotalFrames()
+    );
+  },
   handlePlayClick: function() {
+    if (this.isPlayDisabled()) return;
+    const playing = !this.state.playing;
+    this.setState({playing});
+    if (playing) {
+      this.playFrame();
+    } else {
+      clearTimeout(this.playTid);
+    }
   },
   handleTimeChange: function(e) {
     const prettyTime = e.target.value;
@@ -195,13 +227,15 @@ export default React.createClass({
     this.setState({prettyTime, validTime});
   },
   handleTimeKey: function(e) {
-    if (e.key === "q" || e.key === "w") e.preventDefault();
-    if (this.state.blockingDecode) return;
+    if (e.key === "q" || e.key === "w" || e.key === " ") e.preventDefault();
+    if (e.key === " ") return this.handlePlayClick();
+    if (this.state.blockingDecode || this.state.playing) return null;
 
     const smallShift = 1;                           // 1frame
     const bigShift = 1 * Math.ceil(this.getFPS());  // 1s
     let frame;
 
+    // TODO(Kagami): What browsers don't support KeyboardEvent.key?
     switch (e.key) {
     case "q":
       frame = Math.max(1, this.state.frame - smallShift);
@@ -265,18 +299,18 @@ export default React.createClass({
     // TODO(Kagami): Show some placeholder if frameUrl is undefined?
     return (
       <div style={this.styles.root}>
-        <div style={this.styles.view}>
+        <div style={this.styles.view} onClick={this.handlePlayClick}>
           <div style={this.styles.ghost} />
           <img style={this.getFrameStyle()} src={this.state.frameUrl} />
         </div>
         <div style={this.styles.controls}>
           <FlatButton
             style={this.styles.control}
-            label="▶"
-            title="Play/pause"
+            label={this.state.playing ? "▮▮" : "▶"}
+            title="Play/pause (SLOW)"
             onClick={this.handlePlayClick}
-            disabled
-            />
+            disabled={this.isPlayDisabled()}
+          />
           <FlatButton
             primary
             style={this.styles.control}
@@ -286,7 +320,7 @@ export default React.createClass({
             />
           <input
             ref="time"
-            title="Use Q/W/Up/Down/Enter to adjust seek position"
+            title="Use Q/W/Up/Down/Enter/Space to adjust seek position"
             style={this.getTimeStyle()}
             maxLength={10}
             value={this.state.prettyTime}
@@ -320,7 +354,7 @@ export default React.createClass({
             title="Back"
             style={this.styles.control}
             onClick={this.props.onClear}
-            disabled={this.state.decodingFrame}
+            disabled={this.state.playing || this.state.decodingFrame}
           />
         </div>
       </div>

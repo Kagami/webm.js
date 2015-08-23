@@ -158,6 +158,7 @@ export class Prober {
           "-i", source.path,
           "-map", "0:v:0",
           "-frames:v", count + "",
+          "-qscale:v", "2",
           "-loglevel", "fatal",
           "%02d.jpg",
         ],
