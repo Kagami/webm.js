@@ -60,6 +60,13 @@ const styles = {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
+  right2: {
+    color: secondaryColor,
+    width: 220,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
   error: {
     color: secondaryColor,
   },
@@ -87,7 +94,7 @@ export default React.createClass({
       t.width + "x" + t.height + "@" + t.fps
     ).join(", ");
   },
-  getTracksInfo: function(type) {
+  getTrInfo: function(type) {
     const tracks = this.state.info[type];
     let info = tracks.length + " track";
     if (tracks.length !== 1) info += "s";
@@ -119,34 +126,36 @@ export default React.createClass({
       <Section header="input video info" sectionStyle={styles.section}>
         <ClearFix>
           <table style={styles.infoLeft}>
-            <tr>
-              <td style={styles.left}>Name:</td>
-              <td style={styles.right} title={source.origName}>
+          <tr>
+            <td style={styles.left}>Name:</td>
+            <td>
+              <div style={styles.right} title={source.origName}>
                 {source.origName}
-              </td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Duration:</td>
-              <td style={styles.right}>{showTime(info.duration)}</td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Resolution:</td>
-              <td style={styles.right}>{this.getResInfo()}</td>
-            </tr>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Duration:</td>
+            <td><div style={styles.right}>{showTime(info.duration)}</div></td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Resolution:</td>
+            <td><div style={styles.right}>{this.getResInfo()}</div></td>
+          </tr>
           </table>
           <table style={styles.infoRight}>
-            <tr>
-              <td style={styles.left}>Video:</td>
-              <td style={styles.right}>{this.getTracksInfo("video")}</td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Audio:</td>
-              <td style={styles.right}>{this.getTracksInfo("audio")}</td>
-            </tr>
-            <tr>
-              <td style={styles.left}>Subtitles:</td>
-              <td style={styles.right}>{this.getTracksInfo("subs")}</td>
-            </tr>
+          <tr>
+            <td style={styles.left}>Video:</td>
+            <td><div style={styles.right2}>{this.getTrInfo("video")}</div></td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Audio:</td>
+            <td><div style={styles.right2}>{this.getTrInfo("audio")}</div></td>
+          </tr>
+          <tr>
+            <td style={styles.left}>Subtitles:</td>
+            <td><div style={styles.right2}>{this.getTrInfo("subs")}</div></td>
+          </tr>
           </table>
         </ClearFix>
       </Section>
