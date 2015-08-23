@@ -83,7 +83,9 @@ export default React.createClass({
            this.state.error ? this.state.error.log : null;
   },
   getResInfo: function() {
-    return this.state.info.video.map(t => t.width + "x" + t.height).join(", ");
+    return this.state.info.video.map(t =>
+      t.width + "x" + t.height + "@" + t.fps
+    ).join(", ");
   },
   getTracksInfo: function(type) {
     const tracks = this.state.info[type];
