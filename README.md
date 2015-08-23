@@ -18,7 +18,7 @@ webm.js is a simple one-page application that allows you to convert videos to We
 
 ### How to try it?
 
-Latest build of webm.js is [available here](https://kagami.github.io/webm.js/). **NOTE:** video player feature is experimental and slow.
+Latest build of webm.js is [available here](https://kagami.github.io/webm.js/). NOTE: video player feature is experimental and slow.
 
 ### Is it fast?
 
