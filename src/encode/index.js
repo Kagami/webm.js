@@ -17,12 +17,12 @@ import {
 
 const styles = {
   header: {
-    paddingTop: 8,
-    paddingLeft: 8,
+    padding: "8px 8px 0",
     color: "#e0e0e0",
     fontWeight: 500,
     fontSize: "18px",
     textTransform: "uppercase",
+    wordBreak: "break-all",
   },
   progress: {
     margin: "4px 0 20px 0",
@@ -59,12 +59,6 @@ function basename(name) {
     const ext = name.slice(dotIndex + 1);
     if (ext !== "webm") name = name.slice(0, dotIndex);
   }
-  return name;
-}
-
-function getShortName(name) {
-  const MAX_LENGTH = 70;
-  if (name.length > MAX_LENGTH) name = name.slice(0, MAX_LENGTH) + "…";
   return name;
 }
 
@@ -397,8 +391,7 @@ export default React.createClass({
     const error = !!this.state.error;
     const progress = done ? 100 : error ? 0 : this.state.progress;
     const outname = this.getOutputFilename();
-    const shortname = getShortName(outname);
-    let header = "encoding " + shortname + ": ";
+    let header = "encoding " + this.props.source.origName + ": ";
     let url;
     if (error) {
       header = "encoding error";
