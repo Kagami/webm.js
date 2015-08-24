@@ -15,9 +15,9 @@ const isSafari = !isIE && (function() {
 export default React.createClass({
   handleClick: function() {
     if (isIE) {
-      navigator.msSaveOrOpenBlob(this.props.url, this.props.name);
+      navigator.msSaveOrOpenBlob(this.props.blob, this.props.name);
     } else if (isSafari) {
-      location.href = this.props.url;
+      location.href = this.props.blob;
     }
   },
   render: function() {

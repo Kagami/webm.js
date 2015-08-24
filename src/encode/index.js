@@ -290,7 +290,9 @@ export default React.createClass({
       muxerLogItem.done = true;
       mainLogItem.done = true;
       logMain("Muxer finished (" + muxerT() + ")");
-      const output = files[0];
+      let output = files[0];
+      output.blob = new Blob([output.data]);
+      output.url = URL.createObjectURL(output.blob);
       log(mainKey, "==================================================");
       log(mainKey, "All is done in " + overallT());
       log(mainKey, "Output duration: " + showTime(outduration));
@@ -391,14 +393,12 @@ export default React.createClass({
     const error = !!this.state.error;
     const progress = done ? 100 : error ? 0 : this.state.progress;
     const outname = this.getOutputFilename();
+    const output = this.state.output || {};
     let header = "encoding " + this.props.source.origName + ": ";
-    let url;
     if (error) {
       header = "encoding error";
     } else if (done) {
       header += "done";
-      const blob = new Blob([this.state.output.data]);
-      url = URL.createObjectURL(blob);
     } else {
       header += progress + "%";
     }
@@ -419,7 +419,8 @@ export default React.createClass({
               onClick={this.handleCancelClick}
             />
             <Download
-              url={url}
+              blob={output.blob}
+              url={output.url}
               name={outname}
               disabled={!done}
               primary
@@ -433,7 +434,7 @@ export default React.createClass({
               label="preview"
               onClick={this.handlePreviewClick}
             />
-            <Preview ref="preview" url={url} />
+            <Preview ref="preview" url={output.url} />
           </div>
           <Checkbox
             defaultChecked={this.state.scrollOnOutput}
