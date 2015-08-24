@@ -126,7 +126,7 @@ export default React.createClass({
       if (track.title) text += " " + track.title;
       // subtitles filter accepts relative sub index.
       const payload = type === "subs" && relIndex ? track.si : track.id;
-      return {payload, text};
+      return {payload, text, title: text};
     });
   },
   // NOTE(Kagami): We will always have video tracks because we checked
