@@ -120,6 +120,9 @@ export default React.createClass({
       </Section>
     ) : null;
   },
+  getInfoRightNode: function(style, text) {
+    return <td><div style={style} title={text}>{text}</div></td>;
+  },
   getInfoInnerNode: function() {
     const source = this.props.source;
     const info = this.state.info;
@@ -129,33 +132,29 @@ export default React.createClass({
           <table style={styles.infoLeft}>
           <tr>
             <td style={styles.left}>Name:</td>
-            <td>
-              <div style={styles.right} title={source.origName}>
-                {source.origName}
-              </div>
-            </td>
+            {this.getInfoRightNode(styles.right, source.origName)}
           </tr>
           <tr>
             <td style={styles.left}>Duration:</td>
-            <td><div style={styles.right}>{showTime(info.duration)}</div></td>
+            {this.getInfoRightNode(styles.right, showTime(info.duration))}
           </tr>
           <tr>
             <td style={styles.left}>Resolution:</td>
-            <td><div style={styles.right}>{this.getResInfo()}</div></td>
+            {this.getInfoRightNode(styles.right, this.getResInfo())}
           </tr>
           </table>
           <table style={styles.infoRight}>
           <tr>
             <td style={styles.left}>Video:</td>
-            <td><div style={styles.right2}>{this.getTrInfo("video")}</div></td>
+            {this.getInfoRightNode(styles.right2, this.getTrInfo("video"))}
           </tr>
           <tr>
             <td style={styles.left}>Audio:</td>
-            <td><div style={styles.right2}>{this.getTrInfo("audio")}</div></td>
+            {this.getInfoRightNode(styles.right2, this.getTrInfo("audio"))}
           </tr>
           <tr>
             <td style={styles.left}>Subtitles:</td>
-            <td><div style={styles.right2}>{this.getTrInfo("subs")}</div></td>
+            {this.getInfoRightNode(styles.right2, this.getTrInfo("subs"))}
           </tr>
           </table>
         </ClearFix>
