@@ -24,11 +24,15 @@
       font-size: 16px;
       overflow-y: scroll;
     }
+    input::-ms-clear {
+      width: 0;
+      height: 0;
+    }
   </style>
 </head>
 <body>
   <a href="https://github.com/Kagami/webm.js"><img style="position:absolute;top:0;right:0;border:0" src="{%=url('ribbon.png')%}" alt="Fork me on GitHub"></a>
-  <div style="margin:30px 0;text-align:center"><a href=""><img style="border:0" src="{%=url('logo.png')%}" alt="webm.js"></a></div>
+  <div style="margin:30px 0 50px;text-align:center"><a href=""><img style="border:0" src="{%=url('logo.png')%}" alt="webm.js"></a></div>
   <div id="main"></div>
   <script src="{%=url('webm.js')%}"></script>
 </body>

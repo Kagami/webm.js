@@ -119,6 +119,7 @@ export default React.createClass({
       borderStyle: "solid",
       boxSizing: "border-box",
       borderRadius: 5,
+      outline: "none",
     },
   },
   getFrameStyle: function() {
@@ -326,6 +327,7 @@ export default React.createClass({
             />
           <input
             ref="time"
+            type="text"
             title="Use Q/W/Up/Down/Enter/Space to adjust seek position"
             style={this.getTimeStyle()}
             maxLength={10}
