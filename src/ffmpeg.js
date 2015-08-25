@@ -11,8 +11,8 @@ const WORKER_URL = require(
   "ffmpeg.js/ffmpeg-worker-webm"
 );
 
-const DECODE_MEMORY = 134217728;
-const ENCODE_MEMORY = 268435456;
+const DECODE_MEMORY = 134217728;  // 128MiB
+const ENCODE_MEMORY = 268435456;  // 256MiB
 
 // Taken from webm.py
 export function parseTime(time) {
