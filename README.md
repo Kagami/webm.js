@@ -16,9 +16,14 @@
 
 webm.js is a simple one-page application that allows you to convert videos to WebM format right into your browser, without any plugins or server-side involved. It is built upon FFmpeg, libvpx and libopus which were ported to JavaScript using Emscripten. Since WebM is part of HTML5 stack, why can't we create one without leaving the browser?
 
-### How to try it?
+### Try it
 
 Latest build of webm.js is [available here](https://kagami.github.io/webm.js/). NOTE: video player feature is experimental and slow.
+
+Tested browsers:
+* Firefox: fast enough to encode several minutes of SD/HD video within half of hour
+* Chrome: a bit slower than FF but still good
+* Edge: everything works but too slow even with asm.js enabled in settings; please [comment here](https://github.com/Kagami/webm.js/issues/1) if you know how to improve it
 
 ### Is it fast?
 
