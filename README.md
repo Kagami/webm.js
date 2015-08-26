@@ -23,7 +23,7 @@ Latest build of webm.js is [available here](https://kagami.github.io/webm.js/). 
 Tested browsers:
 * Firefox: fast enough to encode several minutes of SD/HD video within half of hour
 * Chrome: a bit slower than FF but still good
-* Edge: everything works but too slow even with asm.js enabled in settings; please [comment here](https://github.com/Kagami/webm.js/issues/1) if you know how to improve it
+* Edge: a bit slower than FF but still good (make sure to enable asm.js in `about:flags`)
 
 ### Is it fast?
 
