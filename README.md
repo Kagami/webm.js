@@ -33,7 +33,7 @@ To get you some concrete numbers: it takes ~5m25s to encode [sample clip](https:
 
 ### What about quality?
 
-Currently only VP8+Opus combination is supported. Opus is better than Vorbis ([and almost any other lossy audio codec](http://opus-codec.org/comparison/quality.png)) for the full range of bitrates and blazingly fast. Unfortunately, due to lack of SIMD, libvpx-vp9 encoder is rather impractical in browser and VP8 is significantly worse than VP9. Though [JavaScript SIMD API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SIMD) is part of ES7 proposal and already supported by Firefox Nightly so I'm actively looking into this.
+Currently only VP8+Opus combination is supported. Opus is better than Vorbis ([and almost any other lossy audio codec](http://opus-codec.org/comparison/quality.png)) for the full range of bitrates and encoder is blazingly fast. Unfortunately, due to lack of SIMD, libvpx-vp9 encoder is rather impractical in browser and VP8 is significantly worse than VP9. Though [JavaScript SIMD API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SIMD) is part of ES7 proposal and already supported by Firefox Nightly so I'm actively looking into this.
 
 Trying to compensate the use of outdated codec, two-pass encoding with `speed=1` and `lag-in-frames=25` is used. Splitting video in parts creates additional keyframes and therefore loses effeciency a bit, but  the difference should be negligible for the `g=128` currently used. It is also possible to specify `speed=0` or `quality=best` and other FFmpeg/libvpx options if you're trying to achieve the maximal quality.
 
