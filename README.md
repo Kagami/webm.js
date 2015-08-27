@@ -24,6 +24,7 @@ Tested browsers:
 * Firefox: fast enough to encode several minutes of SD/HD video within half of hour
 * Chrome: a bit slower than FF but still good
 * Edge: a bit slower than FF but still good (make sure to enable asm.js in `about:flags`)
+* IE11: several times slower than Edge and will fail on big files but otherwise works
 
 ### Is it fast?
 
