@@ -541,9 +541,7 @@ export default React.createClass({
           <SelectField
             value={this.state.audioTrack}
             hintText="Select audio track"
-            // Doesn't work for now, see:
-            // <https://github.com/callemall/material-ui/issues/1294>.
-            // disabled={this.state.noAudio}
+            disabled={this.state.noAudio}
             onChange={this.handleSelect.bind(null, "audioTrack")}
             menuItems={this.getItems("audio")}
             style={styles.tracks}
@@ -582,7 +580,7 @@ export default React.createClass({
             <SelectField
               value={this.state.subsTrack}
               hintText="Subtitles track"
-              // disabled={!this.state.burnSubs}
+              disabled={!this.state.burnSubs}
               onChange={this.handleSelect.bind(null, "subsTrack")}
               menuItems={this.getItems("subs", this.state.burnSubs)}
               style={styles.tracks}
