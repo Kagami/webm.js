@@ -26,7 +26,7 @@ Tested browsers:
 * Edge: a bit slower than FF but still good (make sure to enable asm.js in `about:flags`)
 * IE11: several times slower than Edge and will fail on big files but otherwise works
 
-Take also look at [demo](https://raw.githubusercontent.com/Kagami/webm.js/assets/webm.js-demo.webm) and [screenshots](https://github.com/Kagami/webm.js/wiki/Screenshots).
+Take also look at [demo](https://raw.githubusercontent.com/Kagami/webm.js/assets/demo.webm) and [screenshots](https://github.com/Kagami/webm.js/wiki/Screenshots).
 
 ### Is it fast?
 
