@@ -9,8 +9,11 @@ import {
 } from "../theme";
 import {download} from "../util";
 
-const SAMPLE_NAME = "ed.webm";
-const SAMPLE_URL = require("file?name=[name].[ext]!./ed.webm");
+const SAMPLE_NAME = "elephants-dream.webm";
+const SAMPLE_URL = require(
+  "file?name=[hash:10].[name].[ext]!" +
+  "./elephants-dream.webm"
+);
 
 const styles = {
   border: {
