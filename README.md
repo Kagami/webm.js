@@ -26,6 +26,8 @@ Tested browsers:
 * Edge: a bit slower than FF but still good (make sure to enable asm.js in `about:flags`)
 * IE11: several times slower than Edge and will fail on big files but otherwise works
 
+Take also look at [demo](https://raw.githubusercontent.com/Kagami/webm.js/assets/webm.js-demo.webm) and [screenshots](https://github.com/Kagami/webm.js/wiki/Screenshots).
+
 ### Is it fast?
 
 Well, partly. With the help of asm.js, generic code compiled by Emscripten is almost as fast as native, but JavaScript doesn't have access to advanced x86 instructions like SSE and codecs use them far and wide so we have some performance degradation here. Not that drastical though—I had numbers like 8x worse than native@corei7-avx for libvpx-vp8 and ~4 fps (single thread, SD, medium settings). Low-level multithreading is also [not available](https://github.com/kripken/emscripten/blob/master/site/source/docs/porting/pthreads.rst) in stable versions of browsers, but luckily we can hack it up by splitting video into chunks and encoding them in separate workers.
