@@ -136,7 +136,9 @@ export default React.createClass({
   getTimeStyle: function() {
     let style = Object.assign({}, this.styles.time);
     style.color = this.state.validTime ? "#ff4081" : "#f00";
-    style.borderColor = this.state.validTime ? "#dcdad5" : "#f00";
+    style.borderColor = this.state.validTime
+      ? (this.state.focusedTime ? "#ff4081" : "#dcdad5")
+      : "#f00";
     return style;
   },
   getTrack: function() {
@@ -278,6 +280,12 @@ export default React.createClass({
       break;
     }
   },
+  handleTimeFocus: function() {
+    this.setState({focusedTime: true});
+  },
+  handleTimeBlur: function() {
+    this.setState({focusedTime: false});
+  },
   handleCutStartClick: function() {
     const time = this.getTime(this.state.frame);
     this.props.onParams({start: time});
@@ -334,6 +342,8 @@ export default React.createClass({
             value={this.state.prettyTime}
             onChange={this.handleTimeChange}
             onKeyDown={this.handleTimeKey}
+            onFocus={this.handleTimeFocus}
+            onBlur={this.handleTimeBlur}
           />
           <FlatButton
             primary
