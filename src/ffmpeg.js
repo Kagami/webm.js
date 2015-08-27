@@ -4,15 +4,16 @@
  * @module webm/ffmpeg
  */
 
-import {assert, has, pad2, WORKERFS_DIR} from "./util";
+import {assert, has, pad2, WORKERFS_DIR, isChakra} from "./util";
 
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
   "ffmpeg.js/ffmpeg-worker-webm"
 );
 
-const DECODE_MEMORY = 134217728;  // 128MiB
-const ENCODE_MEMORY = 268435456;  // 256MiB
+// TODO(Kagami): This should be done better, see GH-7.
+const DECODE_MEMORY = isChakra ? 67108864 : 134217728;
+const ENCODE_MEMORY = isChakra ? 67108864 : 268435456;
 
 // Taken from webm.py
 export function parseTime(time) {

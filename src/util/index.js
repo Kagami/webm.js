@@ -169,3 +169,5 @@ export function download(url) {
     req.send();
   });
 }
+
+export const isChakra = navigator.userAgent.indexOf("Trident") !== -1;
