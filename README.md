@@ -18,7 +18,7 @@ webm.js is a simple one-page application that allows you to convert videos to We
 
 ### Try it
 
-Latest build of webm.js is [available here](https://kagami.github.io/webm.js/). NOTE: video player feature is experimental and slow.
+Latest build of webm.js is [available here](https://kagami.github.io/webm.js/). NOTE: built-in video player uses software decoding in order to play any video it can encode and thus experimental and slow.
 
 Tested browsers:
 * Firefox: fast enough to encode several minutes of SD/HD video within half of hour
