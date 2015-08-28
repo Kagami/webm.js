@@ -65,12 +65,12 @@ function createFrameCacher(totalFrames) {
 export default React.createClass({
   getInitialState: function() {
     this.playTimeout = Math.floor(1000 / this.PLAY_FPS);
-    return {frame: 1};
+    return {frame: 0};
   },
   componentWillMount: function() {
     this.frameCacher = createFrameCacher(this.getTotalFrames());
-    this.setTime(this.state.frame);
-    this.decodeFrame(this.state.frame);
+    // Emulate valid time for first frame.
+    this.setTime(1);
   },
   styles: {
     root: {
@@ -295,6 +295,7 @@ export default React.createClass({
     this.props.onParams({duration: time, useEndTime: true});
   },
   handleSeekChange: function(e, frame) {
+    frame = Math.max(1, frame);
     this.setState({frame});
     this.setTime(frame);
     if (this.state.draggingSeek) return;
@@ -357,8 +358,6 @@ export default React.createClass({
               ref="seek"
               name="seek"
               value={this.state.frame}
-              defaultValue={1}
-              min={1}
               step={1}
               max={this.getTotalFrames()}
               style={this.styles.seek}
