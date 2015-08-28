@@ -62,9 +62,27 @@ function createFrameCacher(totalFrames) {
   };
 }
 
+const requestAnimFrame = (
+  window.requestAnimationFrame ||
+  window.webkitRequestAnimationFrame ||
+  window.mozRequestAnimationFrame ||
+  window.oRequestAnimationFrame ||
+  window.msRequestAnimationFrame
+);
+
+const cancelAnimFrame = (
+  window.cancelAnimationFrame ||
+  window.webkitCancelAnimationFrame ||
+  window.mozCancelAnimationFrame ||
+  window.oCancelAnimationFrame ||
+  window.msCancelAnimationFrame
+);
+
 export default React.createClass({
   getInitialState: function() {
-    this.playTimeout = Math.floor(1000 / this.PLAY_FPS);
+    this.playRID = null;
+    this.lastFrameTime = 0.0;
+    this.minFrameDelay = 1000 / this.PLAY_FPS;
     return {frame: 0};
   },
   componentWillMount: function() {
@@ -201,8 +219,12 @@ export default React.createClass({
   // implementation because it's too slow. Better implementation would
   // require full-featured media player port.
   PLAY_FPS: 15,
-  playFrame: function() {
-    if (!this.state.blockingDecode) {
+  playFrame: function(now) {
+    const delta = now - this.lastFrameTime;
+    if (delta >= this.minFrameDelay && !this.state.blockingDecode) {
+      // See <http://codetheory.in/controlling-the-frame-rate> for
+      // details.
+      this.lastFrameTime = now - (delta % this.minFrameDelay);
       const frame = this.state.frame + 1;
       if (frame > this.getTotalFrames()) {
         return this.setState({playing: false});
@@ -211,7 +233,7 @@ export default React.createClass({
       this.setTime(frame);
       this.decodeFrame(frame);
     }
-    this.playTid = setTimeout(this.playFrame, this.playTimeout);
+    this.playRID = requestAnimFrame(this.playFrame);
   },
   isPlayDisabled: function() {
     return !this.state.playing && (
@@ -220,7 +242,7 @@ export default React.createClass({
     );
   },
   pauseActivity: function() {
-    clearTimeout(this.playTid);
+    cancelAnimFrame(this.playRID);
     this.setState({playing: false});
   },
   handlePlayClick: function() {
@@ -228,9 +250,9 @@ export default React.createClass({
     const playing = !this.state.playing;
     this.setState({playing});
     if (playing) {
-      this.playFrame();
+      this.playRID = requestAnimFrame(this.playFrame);
     } else {
-      clearTimeout(this.playTid);
+      cancelAnimFrame(this.playRID);
     }
   },
   handleTimeChange: function(e) {
