@@ -106,7 +106,7 @@ export default React.createClass({
       display: "inline-block",
       margin: 0,
       width: 600,
-      height: 16,
+      height: 13,
     },
     time: {
       display: "inline-block",
