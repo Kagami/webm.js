@@ -161,6 +161,11 @@ export default React.createClass({
       </Section>
     ) : null;
   },
+  pauseActivity: function() {
+    // Pause any running actions as requested by parent component.
+    // This only affects view component currently.
+    if (this.refs.view) this.refs.view.pauseActivity();
+  },
   handleMoreClick: function() {
     this.setState({logShown: !this.state.logShown});
   },
@@ -170,6 +175,7 @@ export default React.createClass({
     );
     const view = (
       <View
+        ref="view"
         prober={this.props.prober}
         source={this.props.source}
         info={this.state.info}

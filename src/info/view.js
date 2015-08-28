@@ -219,6 +219,10 @@ export default React.createClass({
       this.state.frame >= this.getTotalFrames()
     );
   },
+  pauseActivity: function() {
+    clearTimeout(this.playTid);
+    this.setState({playing: false});
+  },
   handlePlayClick: function() {
     if (this.isPlayDisabled()) return;
     const playing = !this.state.playing;

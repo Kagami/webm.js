@@ -78,6 +78,7 @@ const Main = React.createClass({
     return this.state.source ? (
       <ShowHide show={!this.state.params} viaCSS>
         <Info
+          ref="info"
           prober={this.state.prober}
           source={this.state.source}
           onLoad={this.handleInfoLoad}
@@ -130,6 +131,7 @@ const Main = React.createClass({
     this.setState({info});
   },
   handleParamsReady: function(params) {
+    this.refs.info.pauseActivity();
     this.setState({params});
   },
   handleEncodeCancel: function() {
