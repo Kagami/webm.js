@@ -78,6 +78,13 @@ const cancelAnimFrame = (
   window.msCancelAnimationFrame
 );
 
+const KEY_Q = 81;
+const KEY_W = 87;
+const KEY_SPACE = 32;
+const KEY_ARROW_UP = 38;
+const KEY_ARROW_DOWN = 40;
+const KEY_ENTER = 13;
+
 export default React.createClass({
   getInitialState: function() {
     this.playRID = null;
@@ -263,41 +270,42 @@ export default React.createClass({
     this.setState({prettyTime, validTime});
   },
   handleTimeKey: function(e) {
-    if (e.key === "q" || e.key === "w" || e.key === " ") e.preventDefault();
-    if (e.key === " ") return this.handlePlayClick();
+    if (e.which === KEY_Q || e.which === KEY_W || e.which === KEY_SPACE) {
+      e.preventDefault();
+    }
+    if (e.which === KEY_SPACE) return this.handlePlayClick();
     if (this.state.blockingDecode || this.state.playing) return null;
 
     const smallShift = 1;                           // 1frame
     const bigShift = 1 * Math.ceil(this.getFPS());  // 1s
     let frame;
 
-    // TODO(Kagami): What browsers don't support KeyboardEvent.key?
-    switch (e.key) {
-    case "q":
+    switch (e.which) {
+    case KEY_Q:
       frame = Math.max(1, this.state.frame - smallShift);
       this.setState({frame});
       this.setTime(frame);
       this.decodeFrame(frame);
       break;
-    case "w":
+    case KEY_W:
       frame = Math.min(this.state.frame + smallShift, this.getTotalFrames());
       this.setState({frame});
       this.setTime(frame);
       this.decodeFrame(frame);
       break;
-    case "ArrowUp":
+    case KEY_ARROW_UP:
       frame = Math.min(this.state.frame + bigShift, this.getTotalFrames());
       this.setState({frame});
       this.setTime(frame);
       this.decodeFrame(frame);
       break;
-    case "ArrowDown":
+    case KEY_ARROW_DOWN:
       frame = Math.max(1, this.state.frame - bigShift);
       this.setState({frame});
       this.setTime(frame);
       this.decodeFrame(frame);
       break;
-    case "Enter":
+    case KEY_ENTER:
       if (this.state.validTime) {
         frame = this.getFrame(this.state.prettyTime);
         this.setState({frame});
