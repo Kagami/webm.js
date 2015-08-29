@@ -131,7 +131,7 @@ export default React.createClass({
       width: 100,
       textAlign: "center",
       marginRight: 5,
-      lineHeight: "24px",
+      height: 28,
       fontSize: "14px",
       borderWidth: 1,
       borderStyle: "solid",
