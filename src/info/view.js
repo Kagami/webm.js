@@ -346,8 +346,6 @@ export default React.createClass({
     this.focusTime();
   },
   render: function() {
-    // TODO(Kagami): Use icons.
-    // TODO(Kagami): Show some placeholder if frameUrl is undefined?
     return (
       <div style={this.styles.root}>
         <div style={this.styles.view} onClick={this.handlePlayClick}>
