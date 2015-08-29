@@ -9,7 +9,7 @@
     "release": "rm -rf dist && NODE_ENV=production webpack",
     "lint": "eslint .",
     "test": "npm run dev && npm run release && npm run lint",
-    "pages": "npm run release && D=`mktemp -d` && cp dist/* \"$D\" && git checkout gh-pages && rm -f -- * && mv \"$D\"/* . && rmdir \"$D\""
+    "pages": "npm run release && D=`mktemp -d` && cp dist/* \"$D\" && git checkout gh-pages && rm -f -- *; mv \"$D\"/* . && rmdir \"$D\""
   },
   "repository": {
     "type": "git",
