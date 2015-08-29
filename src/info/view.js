@@ -115,6 +115,7 @@ export default React.createClass({
     control: {
       marginRight: 5,
       minWidth: 50,
+      maxWidth: 50,
     },
     seekOuter: {
       display: "inline-block",
