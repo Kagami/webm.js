@@ -170,4 +170,5 @@ export function download(url) {
   });
 }
 
-export const isChakra = navigator.userAgent.indexOf("Trident") !== -1;
+// IE<=11.
+export const isOldChakra = navigator.userAgent.indexOf("Trident") !== -1;

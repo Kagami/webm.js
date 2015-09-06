@@ -4,7 +4,7 @@
  * @module webm/ffmpeg
  */
 
-import {assert, has, pad2, WORKERFS_DIR, isChakra} from "./util";
+import {assert, has, pad2, WORKERFS_DIR, isOldChakra} from "./util";
 
 const WORKER_URL = require(
   "file?name=[hash:10].[name].[ext]!" +
@@ -12,8 +12,8 @@ const WORKER_URL = require(
 );
 
 // TODO(Kagami): This should be done better, see GH-7.
-const DECODE_MEMORY = isChakra ? 67108864 : 134217728;
-const ENCODE_MEMORY = isChakra ? 67108864 : 268435456;
+const DECODE_MEMORY = isOldChakra ? 67108864 : 134217728;
+const ENCODE_MEMORY = isOldChakra ? 67108864 : 268435456;
 
 // Taken from webm.py
 export function parseTime(time) {
