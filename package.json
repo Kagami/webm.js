@@ -32,7 +32,7 @@
     "core-js": "^1.0.0",
     "ffmpeg.js": "^2.7.9012",
     "material-ui": "^0.11.0",
-    "react": "^0.13.3",
+    "react": "^0.14.9",
     "react-tap-event-plugin": "^0.1.7"
   },
   "devDependencies": {
